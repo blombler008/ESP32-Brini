@@ -5,7 +5,8 @@
  
 #include <FreeRTOS.h>
 #include <task.h>
-#include <Wire.h>  
+#include <Wire.h>   
+#include <SPI.h>
 #include <WebServer.h>
 #include <Adafruit_NeoPixel.h> 
 
