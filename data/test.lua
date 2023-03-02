@@ -4,7 +4,7 @@
             getWifiSSID()
             setWifiEnabled(enable)
             isWifiEnabled()
-            
 
-]]
-    
+
+]] 
+print("Hello from Test. Lua here") 

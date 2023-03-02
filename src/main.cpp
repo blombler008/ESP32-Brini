@@ -150,8 +150,11 @@ void fsinit() {
         return;
     }
     
-    listDir(LittleFS, "/", 0);
-    readFile(LittleFS, "/test.lua"); 
+    listDir(LittleFS, "/", 0); 
+    LuaWrapper wrapper = LuaWrapper();
+    String result = wrapper.Lua_doFile("/test.lua");
+    if (!result.isEmpty())
+        Serial.println(result);
 }
 
 void setup() {
