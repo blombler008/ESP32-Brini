@@ -1,0 +1,2 @@
+C:\Users\lucie\.platformio\packages\tool-mkfatfs\mkfatfs.exe -c data -s 0x160000 -t littlefs data.bin
+esptool.py write_flash 0x290000 data.bin

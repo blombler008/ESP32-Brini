@@ -1,6 +1,3 @@
 [submodule "lib/ESP-Arduino-Lua"]
 	path = lib/ESP-Arduino-Lua
 	url = https://github.com/sfranzyshen/ESP-Arduino-Lua
-[submodule "lib/LITTLEFS"]
-	path = lib/LITTLEFS
-	url = https://github.com/lorol/LITTLEFS

@@ -1,9 +1,8 @@
 #include <WiFi.h>
 #include <WiFiUdp.h>
 #include <WiFiClient.h>
-#include <config.hpp>
-#include <esp_littlefs.h> 
-#include <LITTLEFS.h>
+#include <config.hpp> 
+#include <LittleFS.h>
  
 #ifndef CONFIG_LITTLEFS_FOR_IDF_3_2
  #include <time.h>
@@ -18,7 +17,7 @@ void shiftData(uint8_t data) {
 	digitalWrite(SR_RCK_PIN, LOW);
 }
 
-#define FORMAT_LITTLEFS_IF_FAILED true
+#define FORMAT_LITTLEFS_IF_FAILED false
 
 void listDir(fs::FS &fs, const char * dirname, uint8_t levels){
     Serial.printf("Listing directory: %s\r\n", dirname);
@@ -92,10 +91,11 @@ void readFile(fs::FS &fs, const char * path){
         return;
     }
 
-    Serial.println("- read from file:");
+    Serial.print("- read from file: \"");
     while(file.available()){
         Serial.write(file.read());
     }
+    Serial.println("\"");
     file.close();
 }
 void writeFile(fs::FS &fs, const char * path, const char * message){
@@ -144,31 +144,21 @@ void deleteFile(fs::FS &fs, const char * path){
         Serial.println("- delete failed");
     }
 }
-void littlefs(const esp_vfs_littlefs_conf_t * conf) {
-    if(!LITTLEFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
+void fsinit() {
+    if(!LittleFS.begin(FORMAT_LITTLEFS_IF_FAILED)){
         Serial.println("LITTLEFS Mount Failed");
         return;
     }
     
-    listDir(LITTLEFS, "/", 0);
-    readFile(LITTLEFS, "/test.txt");
+    listDir(LittleFS, "/", 0);
+    readFile(LittleFS, "/test.lua");
+    readFile(LittleFS, "/reallua.lua");
 }
 
 void setup() {
-    Serial.begin(115200);
-    esp_vfs_littlefs_conf_t conf = esp_vfs_littlefs_conf_t();
-    conf.base_path = "";
-    conf.format_if_mount_failed = false;
-    conf.partition_label = "spiffs";
-    conf.dont_mount = false;
-    esp_vfs_littlefs_register(&conf);
+    Serial.begin(115200);  
     
-    bool fsMounted = esp_littlefs_mounted(conf.partition_label);
-    if (fsMounted) {
-        esp_vfs_littlefs_unregister(conf.partition_label);
-        Serial.println("Little Fs Mounted"); 
-        littlefs(&conf); 
-    }
+    fsinit(); 
 
 	pinMode(SR_RCK_PIN, OUTPUT);
 	pinMode(SR_CLK_PIN, OUTPUT); 
