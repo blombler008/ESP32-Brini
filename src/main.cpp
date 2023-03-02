@@ -151,8 +151,7 @@ void fsinit() {
     }
     
     listDir(LittleFS, "/", 0);
-    readFile(LittleFS, "/test.lua");
-    readFile(LittleFS, "/reallua.lua");
+    readFile(LittleFS, "/test.lua"); 
 }
 
 void setup() {
