@@ -16,8 +16,9 @@ void fsinit() {
     fswrapper.begin(FORMAT_LITTLEFS_IF_FAILED);
     fswrapper.listDir("/", 0); 
     
-    LuaWrapper lua;  
-    String result = lua.Lua_doFile("/test.lua");
+    LuaWrapper lua;
+    
+    String result = lua.Lua_doFile("/littlefs/test.lua");
     if (!result.isEmpty())
         Serial.println(result);
 }
