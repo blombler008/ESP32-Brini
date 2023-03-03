@@ -1,4 +1,4 @@
-#include <config.hpp> 
+#include <config.hpp>  
 
 WiFiUDP udp;
 WiFiServer server(8080);
@@ -14,7 +14,10 @@ void shiftData(uint8_t data) {
 }
 
 
-void fsinit() {
+TaskHandle_t fs_lua;
+
+void fsinit(void* pvArgs) {
+    
     FSWrapper fswrapper;
     fswrapper.begin(FORMAT_LITTLEFS_IF_FAILED);
     fswrapper.listDir("/", 0); 
@@ -24,14 +27,25 @@ void fsinit() {
     lua.Lua_dostring(&constants);
     
     String result = lua.Lua_doFile("/littlefs/test.lua");
-    if (!result.isEmpty())
+    if (!result.isEmpty()) 
         Serial.println(result);
+
+    lua_State *L = lua.L();
+    while(true) {
+        lua_getglobal(L, "loop");
+        if(lua_isfunction(L, -1)) {
+            lua_pcall(L, 0, 0, 0);
+        }
+        portYIELD();
+    }
+    vTaskDelete(fs_lua);
 }
 
+
 void setup() {
-    Serial.begin(115200);  
-    
-    fsinit(); 
+    Serial.begin(115200);
+
+    xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1);
 
 	pinMode(SR_RCK_PIN, OUTPUT);
 	pinMode(SR_CLK_PIN, OUTPUT); 
@@ -61,6 +75,9 @@ void setup() {
     }
     server.begin();
 	Serial.println("Starting...");
+    udp.setTimeout(20);
+    server.setNoDelay(true);
+    server.setTimeout(20);
     udp.begin(8888);
 }
 

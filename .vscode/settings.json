@@ -62,6 +62,7 @@
     "terminal.integrated.scrollback": 9000,
     "Lua.diagnostics.globals": [
         "millis",
-        "delay"
+        "delay",
+        "loop"
     ]
 }
