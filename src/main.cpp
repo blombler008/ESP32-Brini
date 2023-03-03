@@ -20,6 +20,8 @@ void fsinit() {
     fswrapper.listDir("/", 0); 
     
     LuaWrapper lua;
+    const String constants = (const String) lua.addConstants();
+    lua.Lua_dostring(&constants);
     
     String result = lua.Lua_doFile("/littlefs/test.lua");
     if (!result.isEmpty())

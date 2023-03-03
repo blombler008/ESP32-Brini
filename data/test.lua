@@ -8,3 +8,8 @@
 
 ]] 
 print("Hello from Test. Lua here") 
+
+print(HIGH) 
+print(LOW) 
+print(OUTPUT) 
+print(INPUT) 
