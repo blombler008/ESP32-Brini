@@ -6,6 +6,7 @@ FSWrapper::FSWrapper() {}
 
 bool openFile(File* filef, FS &fs, const char* path, const char* mode = FILE_READ);
 void printLastWrite(File* file);
+void printFileInfo(FSWrapper* w, File *file, int levels);
 
 void FSWrapper::begin(bool formatOnFail) {
     if(!LittleFS.begin(formatOnFail)){
@@ -33,28 +34,11 @@ void FSWrapper::listDir(const char * dirname, uint8_t levels){
         return;
     }
 
-    File file;
-    do{
+    File file = root.openNextFile();
+    while(file){ 
+        printFileInfo(this, &file, levels);
         file = root.openNextFile();
-
-        if(file.isDirectory()){
-            Serial.print("  DIR : ");
-            Serial.print(file.name());
-        
-            printLastWrite(&file);
-            if(levels) listDir(file.name(), levels -1);
-            
-            continue; 
-
-        }
-        Serial.print("  FILE: ");
-        Serial.print(file.name());
-        Serial.print("  SIZE: ");
-
-        Serial.print(file.size()); 
-        printLastWrite(&file);
-
-    } while(file);
+    }
 }
 
 void FSWrapper::createDir(const char * path){
@@ -170,4 +154,21 @@ void printLastWrite(File* file) {
 
     Serial.printf(format, year, mon, day, hour, min, sec);
     
+}
+
+void printFileInfo(FSWrapper* w, File* file, int levels) {
+    if(file->isDirectory()){
+        Serial.print("  DIR : ");
+        Serial.print(file->name());
+    
+        printLastWrite(file);
+        if(levels) w->listDir(file->name(), levels -1);
+        return; 
+    }
+    Serial.print("  FILE: ");
+    Serial.print(file->name());
+    Serial.print("  SIZE: ");
+
+    Serial.print(file->size()); 
+    printLastWrite(file);
 }
