@@ -59,5 +59,9 @@
     "idf.openOcdConfigs": [
         "board/esp32s2-bridge.cfg"
     ],
-    "terminal.integrated.scrollback": 9000
+    "terminal.integrated.scrollback": 9000,
+    "Lua.diagnostics.globals": [
+        "millis",
+        "delay"
+    ]
 }
