@@ -1,17 +1,28 @@
 #include <Arduino.h>  
 #include <pins_arduino.h>
 #include "PrintHelper.hpp" 
+#include "fswrapper.hpp"
 // #include "display.hpp"
  
 #include <FreeRTOS.h>
 #include <task.h>
+
 #include <Wire.h>   
 #include <SPI.h>
-#include <WebServer.h>
 #include <Adafruit_NeoPixel.h> 
 
 #include <WiFi.h> 
+#include <WiFiUdp.h>
+#include <WiFiClient.h>
+#include <WebServer.h>
+
 #include <LuaWrapper.h> 
+#include <LittleFS.h>
+ 
+#ifndef CONFIG_LITTLEFS_FOR_IDF_3_2
+ #include <time.h>
+#endif
+ 
 
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
@@ -45,7 +56,6 @@
 #define RFID_RST        39  // RESET
 
 //  
-#define DEBUG true
 
 
 
