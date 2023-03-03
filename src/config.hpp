@@ -19,10 +19,13 @@
 #include <LuaWrapper.h> 
 #include <LittleFS.h>
  
+#include <MFRC522.h>
+
 #ifndef CONFIG_LITTLEFS_FOR_IDF_3_2
  #include <time.h>
 #endif
  
+#define FORMAT_LITTLEFS_IF_FAILED false
 
 #ifndef CONFIG_HPP
 #define CONFIG_HPP

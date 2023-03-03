@@ -3,13 +3,16 @@
 WiFiUDP udp;
 WiFiServer server(8080);
  
+MFRC522 mfrc522(RFID_CS, RFID_RST);
+
+void printUID(MFRC522::Uid uid);
+
 void shiftData(uint8_t data) {  
     shiftOut(SR_DATA_PIN, SR_CLK_PIN, LSBFIRST, data);   
 	digitalWrite(SR_RCK_PIN, HIGH); 
 	digitalWrite(SR_RCK_PIN, LOW);
 }
 
-#define FORMAT_LITTLEFS_IF_FAILED false
 
 void fsinit() {
     FSWrapper fswrapper;
@@ -38,6 +41,13 @@ void setup() {
 	shiftData(0xaa);	
     vTaskDelay(200);
 	shiftData(0x55);	
+
+    SPI.begin(RFID_SCK, RFID_MISO, RFID_MOSI);
+	mfrc522.PCD_Init();
+	delay(4);
+	mfrc522.PCD_DumpVersionToSerial();
+	Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
+
     vTaskDelay(200);
 	shiftData(0);
 
@@ -51,7 +61,9 @@ void setup() {
 	Serial.println("Starting...");
     udp.begin(8888);
 }
+
 uint8_t data= 0;
+
 void loop() {
     int packetSize = udp.parsePacket();  
     
@@ -97,8 +109,22 @@ void loop() {
 		Serial.println("[TCP] Connection Closed"); 
         shiftData(0);	
 	}  
-	
+    
+    if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+		printUID(mfrc522.uid);
+	}
 
 
-  
 }
+ 
+ 
+void printUID(MFRC522::Uid uid) { 
+	printf("UID OF Device: ");  
+	for (int i = 0; i < uid.size; i++)
+	{
+		if (i > 0) printf(":");
+		printf("%02X", mfrc522.uid.uidByte[i]);
+	}
+	printf("\n");  
+}
+ 
