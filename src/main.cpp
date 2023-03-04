@@ -1,4 +1,5 @@
 #include <config.hpp>  
+#include <phy_init_data.h>
 
 WiFiUDP udp;
 WiFiServer server(8080);
@@ -65,7 +66,9 @@ void fsinit(void* pvArgs) {
 
 
 void setup() {
-    Serial.begin(115200); 
+    
+    Serial.begin(115200);  
+    esp_phy_erase_cal_data_in_nvs();
     pixel.begin();
 
     xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1);

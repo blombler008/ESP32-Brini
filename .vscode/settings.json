@@ -63,6 +63,7 @@
     "Lua.diagnostics.globals": [
         "millis",
         "delay",
-        "loop"
+        "loop",
+        "setPixel"
     ]
 }
