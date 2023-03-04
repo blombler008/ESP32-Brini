@@ -15,7 +15,7 @@ void shiftData(uint8_t data) {
 
 
 TaskHandle_t fs_lua;
-
+Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
 void fsinit(void* pvArgs) {
     
     FSWrapper fswrapper;
@@ -35,6 +35,28 @@ void fsinit(void* pvArgs) {
         lua_getglobal(L, "loop");
         if(lua_isfunction(L, -1)) {
             lua_pcall(L, 0, 0, 0);
+        } 
+
+        lua_getglobal(L, "setPixel");
+        if(lua_isfunction(L, -1)) {
+            lua_pcall(L, 0, 1, 0);
+            int args = lua_gettop(L); 
+
+            float hue;
+            if (lua_isnumber(L, -1)) { 
+                hue = (float) lua_tonumber(L, -1);
+                     
+                pixel.setPixelColor(0, pixel.ColorHSV(hue, 255, 255));
+                pixel.setBrightness(10);
+                pixel.show(); 
+            };
+            lua_pop(L, 1);   
+        }
+        long time = esp_timer_get_time();
+        long next = time + 50000;
+            while(time < next) {
+            time = esp_timer_get_time();
+            portYIELD();
         }
         portYIELD();
     }
@@ -43,10 +65,11 @@ void fsinit(void* pvArgs) {
 
 
 void setup() {
-    Serial.begin(115200);
+    Serial.begin(115200); 
+    pixel.begin();
 
     xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1);
-
+     
 	pinMode(SR_RCK_PIN, OUTPUT);
 	pinMode(SR_CLK_PIN, OUTPUT); 
 	pinMode(SR_DATA_PIN, OUTPUT);
@@ -86,10 +109,10 @@ uint8_t data= 0;
 void loop() {
     int packetSize = udp.parsePacket();  
     
-    shiftData(1);
+    shiftData(0x01);
     if (packetSize) {
          
-        shiftData(3);	
+        shiftData(0x03);	
         byte buffer[packetSize];
         udp.read(buffer, packetSize);
         String message = String((char*)buffer);
@@ -106,7 +129,7 @@ void loop() {
     }
 	
 	if(server.hasClient()) {
-        shiftData(7);	
+        shiftData(0x07);	
 		Serial.println("[TCP] Connecting");
 		WiFiClient client = server.available(); 
 		

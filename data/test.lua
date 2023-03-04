@@ -7,11 +7,17 @@
 
 
 ]]
-print("Hello from Test. Lua here")
+print("Hello from Test.")
 
 print("Current uptime: " .. math.floor(millis()))
 
-function loop()
-    print("Current uptime: " .. math.floor(millis()))
-    delay(10000)
+local hue = 0
+function loop() 
+    hue = hue + 100
+    if hue > 65535 then
+        hue = 0
+    end
+end
+function setPixel()
+    return hue, 255, 255
 end
