@@ -53,10 +53,10 @@
 
 // RFID SPI pins
 #define RFID_SCK        36  // CLOCK
-#define RFID_MISO       38  // DATA IN
-#define RFID_MOSI       37  // DATA OUT
-#define RFID_CS         35  // SELECT
-#define RFID_RST        39  // RESET
+#define RFID_MISO       45   // DATA IN
+#define RFID_MOSI       35  // DATA OUT
+#define RFID_CS         37  // SELECT
+#define RFID_RST        33  // RESET
 
 //  
 

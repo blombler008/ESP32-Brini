@@ -42,7 +42,6 @@ void fsinit(void* pvArgs) {
         if(lua_isfunction(L, -1)) {
             lua_pcall(L, 0, 1, 0);
             int args = lua_gettop(L); 
-
             float hue;
             if (lua_isnumber(L, -1)) { 
                 hue = (float) lua_tonumber(L, -1);
@@ -141,24 +140,33 @@ void loop() {
 				String data = client.readString();
 				String newData = data.substring(0, data.indexOf("\n"));
 				Serial.println("[TCP] Received from Tablet: " + newData); 
-
+                
                 
                 Serial.println("[TCP] Sending: Hello Tablet!"); 
-                client.print("Hello Tablet!\n");
+                
                 client.flush(); 
                 Serial.println("[TCP] Send: Hello Tablet!"); 
                 Serial.println("[TCP] Closing");   
+    
+
 			}  
+            if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+                printUID(mfrc522.uid);
+                for (int i = 0; i < mfrc522.uid.size; i++)
+                {
+                    if (i > 0) client.printf(":");
+                    client.printf("%02X", mfrc522.uid.uidByte[i]);
+                }
+                client.printf("\n");
+                client.printf("Hello Tablet!\n");
+                
+            }
 		} 
 		server.stopAll(); 
 		Serial.println("[TCP] Connection Closed"); 
         shiftData(0);	
 	}  
     
-    if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
-		printUID(mfrc522.uid);
-	}
-
 
 }
  
