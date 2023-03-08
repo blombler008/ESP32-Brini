@@ -134,31 +134,45 @@ void loop() {
         shiftData(0x07);	
 		Serial.println("[TCP] Connecting");
 		WiFiClient client = server.available(); 
-		
+		while(client.connected()) {   
+            if(client.available()) { 
+                String data = client.readString();
+                String newData = data.substring(0, data.indexOf("\n"));
+                Serial.println("[TCP] Received from Tablet: " + newData); 
+                     
+                client.printf("Hello Tablet!\n"); 
+                client.flush();   
+                client.printf("add TestButton 1\n"); 
+                client.flush(); 
+                client.printf("uid clear\n"); 
+                client.flush(); 
+                break;
+            }
+        }
 		while(client.connected()) {   
 			if (client.available()) { 
 				String data = client.readString();
 				String newData = data.substring(0, data.indexOf("\n"));
-				Serial.println("[TCP] Received from Tablet: " + newData); 
-                
-                
-                Serial.println("[TCP] Sending: Hello Tablet!"); 
-                
-                client.flush(); 
-                Serial.println("[TCP] Send: Hello Tablet!"); 
-                Serial.println("[TCP] Closing");   
-    
-
+				Serial.println("[TCP] Received: " + newData); 
+                if(newData.startsWith("but")) { 
+                    newData = newData.substring(4, newData.length());
+                    if(newData.startsWith("added")) { continue; }
+				    Serial.println("[TCP] Button: " + newData); 
+                    client.printf("uid get\n");
+                    client.flush();  
+                }
 			}  
             if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+                
                 printUID(mfrc522.uid);
+                client.printf("uid set ");
                 for (int i = 0; i < mfrc522.uid.size; i++)
                 {
                     if (i > 0) client.printf(":");
                     client.printf("%02X", mfrc522.uid.uidByte[i]);
                 }
                 client.printf("\n");
-                client.printf("Hello Tablet!\n");
+                client.flush();  
                 
             }
 		} 
