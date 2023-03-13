@@ -1,8 +1,7 @@
 #include <Arduino.h>  
 #include <pins_arduino.h>
 #include "PrintHelper.hpp" 
-#include "fswrapper.hpp"
-// #include "display.hpp"
+#include "fswrapper.hpp" 
  
 #include <FreeRTOS.h>
 #include <task.h>
@@ -38,11 +37,7 @@
 
 // serial
 #define SERIAL_BAUD 115200
-
-// display
-#define DISPLAY_ADRESS 0x3C
-#define OLED_ROTATION U8G2_R2
-
+  
 // Register Serial Pins
 #define SR_CLK_PIN      4   // shift clock
 #define SR_DATA_PIN     5   // data
@@ -52,11 +47,17 @@
 
 
 // RFID SPI pins
-#define RFID_SCK        36  // CLOCK
-#define RFID_MISO       45   // DATA IN
-#define RFID_MOSI       35  // DATA OUT
-#define RFID_CS         37  // SELECT
+#define SPI_SCK         36  // CLOCK
+#define SPI_MISO        34  // DATA IN
+#define SPI_MOSI        35  // DATA OUT
+
+#define RFID_CS         37  // Chip SELECT
 #define RFID_RST        33  // RESET
+
+#define TFT_CS          21
+#define TFT_DC          20  
+#define TFT_RST         19
+#define TFT_LED_PIN     38
 
 //  
 

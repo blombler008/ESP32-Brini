@@ -1,10 +1,13 @@
 #include <config.hpp>  
-#include <phy_init_data.h>
-
+#include <phy_init_data.h> 
+#include <LuaHandler.hpp>
+#include <Adafruit_ST7735.h>
+#include <Adafruit_GFX.h>
 WiFiUDP udp;
 WiFiServer server(8080);
  
 MFRC522 mfrc522(RFID_CS, RFID_RST);
+Adafruit_ST7735 tft(&SPI, TFT_CS, TFT_DC, TFT_RST); 
 
 void printUID(MFRC522::Uid uid);
 
@@ -23,46 +26,51 @@ void fsinit(void* pvArgs) {
     fswrapper.begin(FORMAT_LITTLEFS_IF_FAILED);
     fswrapper.listDir("/", 0); 
     
-    LuaWrapper lua;
+    LuaWrapper lua; 
+    LuaHandler luaHandler(lua.L());  
+
     const String constants = (const String) lua.addConstants();
     lua.Lua_dostring(&constants);
     
     String result = lua.Lua_doFile("/littlefs/test.lua");
-    if (!result.isEmpty()) 
-        Serial.println(result);
-
-    lua_State *L = lua.L();
+    if (!result.isEmpty()) Serial.println(result);
+ 
     while(true) {
-        lua_getglobal(L, "loop");
-        if(lua_isfunction(L, -1)) {
-            lua_pcall(L, 0, 0, 0);
-        } 
+        luaHandler.executeLoop(); 
+        uint32_t color = luaHandler.executeSetPixel(); 
 
-        lua_getglobal(L, "setPixel");
-        if(lua_isfunction(L, -1)) {
-            lua_pcall(L, 0, 1, 0);
-            int args = lua_gettop(L); 
-            float hue;
-            if (lua_isnumber(L, -1)) { 
-                hue = (float) lua_tonumber(L, -1);
-                     
-                pixel.setPixelColor(0, pixel.ColorHSV(hue, 255, 255));
-                pixel.setBrightness(10);
-                pixel.show(); 
-            };
-            lua_pop(L, 1);   
-        }
-        long time = esp_timer_get_time();
-        long next = time + 50000;
-            while(time < next) {
-            time = esp_timer_get_time();
-            portYIELD();
-        }
+        pixel.setPixelColor(0, color);
+        pixel.setBrightness(10);
+        pixel.show(); 
+
+        luaHandler.wait(50000);
         portYIELD();
     }
     vTaskDelete(fs_lua);
 }
 
+const uint16_t  Display_Color_Black        = 0x0000;
+const uint16_t  Display_Color_Blue         = 0x001F;
+const uint16_t  Display_Color_Red          = 0xF800;
+const uint16_t  Display_Color_Green        = 0x07E0;
+const uint16_t  Display_Color_Cyan         = 0x07FF;
+const uint16_t  Display_Color_Magenta      = 0xF81F;
+const uint16_t  Display_Color_Yellow       = 0xFFE0;
+const uint16_t  Display_Color_White        = 0xFFFF;
+
+// The colors we actually want to use
+uint16_t        Display_Text_Color         = Display_Color_White;
+uint16_t        Display_Backround_Color    = Display_Color_Black;
+
+void printTextCentered(Adafruit_ST7735* tft, const char* string, int8_t y) { 
+    int16_t  x1, y1;
+    int16_t  x=16;
+    uint16_t w, h;
+    tft->setCursor(x,y);
+    tft->getTextBounds(string, x, y, &x1, &y1, &w, &h);
+    tft->setCursor(64-w/2,y);
+    tft->print(string);
+}
 
 void setup() {
     
@@ -75,15 +83,29 @@ void setup() {
 	pinMode(SR_RCK_PIN, OUTPUT);
 	pinMode(SR_CLK_PIN, OUTPUT); 
 	pinMode(SR_DATA_PIN, OUTPUT);
+	pinMode(TFT_LED_PIN, OUTPUT);
 	digitalWrite(SR_RCK_PIN, LOW);
 	digitalWrite(SR_CLK_PIN, LOW);
 	digitalWrite(SR_DATA_PIN, LOW); 
+	digitalWrite(TFT_LED_PIN, LOW); 
     
 	shiftData(0xaa);	
     vTaskDelay(200);
 	shiftData(0x55);	
 
-    SPI.begin(RFID_SCK, RFID_MISO, RFID_MOSI);
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+
+    tft.initR(INITR_BLACKTAB); 
+    tft.setRotation(2);
+    tft.setFont();
+    tft.fillScreen(Display_Backround_Color);
+    tft.setTextColor(Display_Text_Color);
+    tft.setTextSize(1);
+    
+    tft.enableDisplay(true);
+	digitalWrite(TFT_LED_PIN, HIGH); 
+    printTextCentered(&tft, "Cocktail-Mixer", 16);
+ 
 	mfrc522.PCD_Init();
 	delay(4);
 	mfrc522.PCD_DumpVersionToSerial();
