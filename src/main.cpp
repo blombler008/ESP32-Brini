@@ -1,25 +1,17 @@
 #include <config.hpp>  
-#include <phy_init_data.h> 
-#include <LuaHandler.hpp>
-#include <Adafruit_ST7735.h>
-#include <Adafruit_GFX.h>
+
 WiFiUDP udp;
 WiFiServer server(8080);
- 
+
+TFT display(TFT_CS, TFT_DC, TFT_LED_PIN, TFT_RST);
+ShiftRegister SR(SR_RCK_PIN, SR_CLK_PIN, SR_DATA_PIN); 
 MFRC522 mfrc522(RFID_CS, RFID_RST);
-Adafruit_ST7735 tft(&SPI, TFT_CS, TFT_DC, TFT_RST); 
-
-void printUID(MFRC522::Uid uid);
-
-void shiftData(uint8_t data) {  
-    shiftOut(SR_DATA_PIN, SR_CLK_PIN, LSBFIRST, data);   
-	digitalWrite(SR_RCK_PIN, HIGH); 
-	digitalWrite(SR_RCK_PIN, LOW);
-}
-
 
 TaskHandle_t fs_lua;
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
+
+void printUID(MFRC522::Uid uid);
+  
 void fsinit(void* pvArgs) {
     
     FSWrapper fswrapper;
@@ -49,29 +41,6 @@ void fsinit(void* pvArgs) {
     vTaskDelete(fs_lua);
 }
 
-const uint16_t  Display_Color_Black        = 0x0000;
-const uint16_t  Display_Color_Blue         = 0x001F;
-const uint16_t  Display_Color_Red          = 0xF800;
-const uint16_t  Display_Color_Green        = 0x07E0;
-const uint16_t  Display_Color_Cyan         = 0x07FF;
-const uint16_t  Display_Color_Magenta      = 0xF81F;
-const uint16_t  Display_Color_Yellow       = 0xFFE0;
-const uint16_t  Display_Color_White        = 0xFFFF;
-
-// The colors we actually want to use
-uint16_t        Display_Text_Color         = Display_Color_White;
-uint16_t        Display_Backround_Color    = Display_Color_Black;
-
-void printTextCentered(Adafruit_ST7735* tft, const char* string, int8_t y) { 
-    int16_t  x1, y1;
-    int16_t  x=16;
-    uint16_t w, h;
-    tft->setCursor(x,y);
-    tft->getTextBounds(string, x, y, &x1, &y1, &w, &h);
-    tft->setCursor(64-w/2,y);
-    tft->print(string);
-}
-
 void setup() {
     
     Serial.begin(115200);  
@@ -79,32 +48,16 @@ void setup() {
     pixel.begin();
 
     xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1);
-     
-	pinMode(SR_RCK_PIN, OUTPUT);
-	pinMode(SR_CLK_PIN, OUTPUT); 
-	pinMode(SR_DATA_PIN, OUTPUT);
-	pinMode(TFT_LED_PIN, OUTPUT);
-	digitalWrite(SR_RCK_PIN, LOW);
-	digitalWrite(SR_CLK_PIN, LOW);
-	digitalWrite(SR_DATA_PIN, LOW); 
-	digitalWrite(TFT_LED_PIN, LOW); 
-    
-	shiftData(0xaa);	
+    SR.out(0xaa);
     vTaskDelay(200);
-	shiftData(0x55);	
+    SR.out(0xaa);
 
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
-    tft.initR(INITR_BLACKTAB); 
-    tft.setRotation(2);
-    tft.setFont();
-    tft.fillScreen(Display_Backround_Color);
-    tft.setTextColor(Display_Text_Color);
-    tft.setTextSize(1);
-    
-    tft.enableDisplay(true);
-	digitalWrite(TFT_LED_PIN, HIGH); 
-    printTextCentered(&tft, "Cocktail-Mixer", 16);
+    display.setRotation(Display_Landscape_1);
+    display.initialise(); 
+    display.printTextCentered("Cocktail-Mixer", 16);
+
  
 	mfrc522.PCD_Init();
 	delay(4);
@@ -112,7 +65,7 @@ void setup() {
 	Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
 
     vTaskDelay(200);
-	shiftData(0);
+	SR.out(0);
 
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -128,15 +81,14 @@ void setup() {
     udp.begin(8888);
 }
 
-uint8_t data= 0;
+uint8_t data = 0;
 
 void loop() {
-    int packetSize = udp.parsePacket();  
+    int packetSize = udp.parsePacket();
     
-    shiftData(0x01);
+    SR.out(0x01);
     if (packetSize) {
-         
-        shiftData(0x03);	
+        SR.out(0x03);
         byte buffer[packetSize];
         udp.read(buffer, packetSize);
         String message = String((char*)buffer);
@@ -153,7 +105,7 @@ void loop() {
     }
 	
 	if(server.hasClient()) {
-        shiftData(0x07);	
+        SR.out(0x07);	
 		Serial.println("[TCP] Connecting");
 		WiFiClient client = server.available(); 
 		while(client.connected()) {   
@@ -200,7 +152,7 @@ void loop() {
 		} 
 		server.stopAll(); 
 		Serial.println("[TCP] Connection Closed"); 
-        shiftData(0);	
+        SR.out(0);	
 	}  
     
 

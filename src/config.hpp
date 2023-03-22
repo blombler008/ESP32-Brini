@@ -1,13 +1,18 @@
 #include <Arduino.h>  
 #include <pins_arduino.h>
-#include "PrintHelper.hpp" 
-#include "fswrapper.hpp" 
- 
+#include <PrintHelper.hpp>
+#include <fswrapper.hpp>
+#include <Display.hpp>
+#include <ShiftRegister.hpp>
+#include <LuaHandler.hpp>
+
+#include <phy_init_data.h>
 #include <FreeRTOS.h>
 #include <task.h>
 
 #include <Wire.h>   
 #include <SPI.h>
+
 #include <Adafruit_NeoPixel.h> 
 
 #include <WiFi.h> 
@@ -46,7 +51,7 @@
 #define SR_CLR_PIN      15  // storage & shift register clear
 
 
-// RFID SPI pins
+// SPI pins
 #define SPI_SCK         36  // CLOCK
 #define SPI_MISO        34  // DATA IN
 #define SPI_MOSI        35  // DATA OUT
