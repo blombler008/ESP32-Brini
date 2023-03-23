@@ -1,5 +1,5 @@
 #include <config.hpp>  
-
+ 
 WiFiUDP udp;
 WiFiServer server(8080);
 
@@ -41,24 +41,24 @@ void fsinit(void* pvArgs) {
     vTaskDelete(fs_lua);
 }
 
-void setup() {
-    
+void setup() { 
     Serial.begin(115200);  
-    esp_phy_erase_cal_data_in_nvs();
-    pixel.begin();
-
-    xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1);
-    SR.out(0xaa);
-    vTaskDelay(200);
-    SR.out(0xaa);
+    //esp_phy_erase_cal_data_in_nvs();
+    pixel.begin();  
+    //xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1); 
+    SR.initialise(); 
 
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
+    SR.out(0xaa); 
+    vTaskDelay(200); 
+    SR.out(0x55); 
+  
     display.setRotation(Display_Landscape_1);
-    display.initialise(); 
-    display.printTextCentered("Cocktail-Mixer", 16);
+    display.initialise(&SPI);  
+      
+    display.printTextCentered("Cocktail-Mixer", 16);  
 
- 
 	mfrc522.PCD_Init();
 	delay(4);
 	mfrc522.PCD_DumpVersionToSerial();

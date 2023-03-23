@@ -1,6 +1,4 @@
 #include "LuaHandler.hpp"
-#include <Adafruit_NeoPixel.h>
-#include "PrintHelper.hpp"
 void printErrorRunningFunction(const char* func, const char* msg);
 void printErrorMustReturn(const char* func, const char* type);
 

@@ -1,10 +1,10 @@
 #include <Arduino.h>  
 #include <pins_arduino.h>
-#include <PrintHelper.hpp>
-#include <fswrapper.hpp>
-#include <Display.hpp>
-#include <ShiftRegister.hpp>
-#include <LuaHandler.hpp>
+#include <libs/PrintHelper.hpp>
+#include <libs/fswrapper.hpp>
+#include <libs/Display.hpp>
+#include <libs/ShiftRegister.hpp>
+#include <libs/LuaHandler.hpp>
 
 #include <phy_init_data.h>
 #include <FreeRTOS.h>

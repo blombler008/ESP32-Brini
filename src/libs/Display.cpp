@@ -1,42 +1,40 @@
-#include <Display.hpp>
+#include "Display.hpp"
 
 TFT::TFT(uint8_t cs, uint8_t dc, uint8_t led, uint8_t rst) { 
     ledPin = led;
     dcPin = dc;
     csPin = cs;
     rstPin = rst;
-    (*tft) = Adafruit_ST7735(&SPI, csPin, dcPin, rstPin); 
     displayBackroundColor = Display_Color_Black;
     displayTextColor = Display_Color_White;
     displayRot = Display_Landscape_0;
-	pinMode(ledPin, OUTPUT);
-	digitalWrite(ledPin, LOW); 
+    Adafruit_ST7735 dp(csPin, dcPin, rstPin); 
+    tft = (Adafruit_ST7735*) malloc(sizeof(Adafruit_ST7735));
+    memcpy(tft, &dp, sizeof(Adafruit_ST7735));
 }
-
-void TFT::initialise(){ 
-    displayOFF();
-	digitalWrite(ledPin, LOW); 
-    tft->initR(INITR_BLACKTAB); 
-    tft->setRotation(2);
+  
+void TFT::initialise(SPIClass *spiClass){ 
+	pinMode(ledPin, OUTPUT);
+    displayOFF();  
+    tft->initR(INITR_BLACKTAB);
+    tft->setRotation(displayRot);
     tft->setFont();
     tft->fillScreen(displayBackroundColor);
     tft->setTextColor(displayTextColor);
     tft->setTextSize(1); 
-    
-    tft->enableDisplay(true);
+    tft->enableDisplay(true);  
     displayON();
 }
 
 
-void TFT::printTextCentered(const char* string, int8_t y) { 
+void TFT::printTextCentered(const char* str, uint8_t y) {  
     int16_t  x1, y1;
-    int16_t  x = 16;
+    uint16_t x = 16;
     uint16_t w, h;
     displayOFF();
-    tft->setCursor(x,y);
-    tft->getTextBounds(string, x, y, &x1, &y1, &w, &h);
+    tft->getTextBounds(str, 16, 16, &x1, &y1, &w, &h);
     tft->setCursor(64-w/2,y);
-    tft->print(string);
+    tft->print(str); 
     displayON();
 }
 void TFT::displayOFF() { 

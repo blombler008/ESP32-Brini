@@ -1,6 +1,8 @@
 #ifndef LUA_HANDLER_HPP
 #define LUA_HANDLER_HPP
-#include <LuaWrapper.h>
+#include <LuaWrapper.h> 
+#include <Adafruit_NeoPixel.h>
+#include "PrintHelper.hpp"
 
 class LuaHandler {
     public:

@@ -4,11 +4,13 @@
 #define LSBFIRST 0
 #define MSBFIRST 1
 #include <FreeRTOS.h> 
-#include <esp32-hal-gpio.h>
+#include <Arduino.h>
+#include <driver/gpio.h>
 
 class ShiftRegister {
     public:
         ShiftRegister(uint8_t rck, uint8_t clk, uint8_t data); 
+        void initialise(); 
         void out(uint8_t data);
         uint8_t in();
         void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t val, uint8_t bitOrder = LSBFIRST);

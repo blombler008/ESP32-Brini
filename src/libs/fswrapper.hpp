@@ -1,7 +1,8 @@
 #ifndef FS_WRAPPER_HPP
 #define FS_WRAPPER_HPP
 #include <FS.h>
-#include <LittleFS.h>
+#include <LittleFS.h> 
+#include "PrintHelper.hpp"
 
 class FSWrapper {
     public:  

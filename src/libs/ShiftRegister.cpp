@@ -1,16 +1,19 @@
-#include <ShiftRegister.hpp>  
+#include "ShiftRegister.hpp"  
 
 ShiftRegister::ShiftRegister(uint8_t rck, uint8_t clk, uint8_t data) {
 	RCK_PIN = rck;
 	CLK_PIN = clk;
-	DATA_PIN = data;
+	DATA_PIN = data; 
+} 
+
+void ShiftRegister::initialise() {  
 	pinMode(RCK_PIN, OUTPUT);
 	pinMode(CLK_PIN, OUTPUT); 
 	pinMode(DATA_PIN, OUTPUT);
 	digitalWrite(RCK_PIN, LOW);
 	digitalWrite(CLK_PIN, LOW);
-	digitalWrite(DATA_PIN, LOW);  
-} 
+	digitalWrite(DATA_PIN, LOW);   
+}
 
 void ShiftRegister::out(uint8_t data) { 
     shiftOut(DATA_PIN, CLK_PIN, data);   
