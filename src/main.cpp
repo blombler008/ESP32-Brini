@@ -53,11 +53,15 @@ void setup() {
     SR.out(0xaa); 
     vTaskDelay(200); 
     SR.out(0x55); 
-  
+    #define GAP 8
+    #define LINEHIGHT 20 
+    #define TEXTHEIGHT 4 
+    #define TITLEHEIGHT 16
+    #define TITLE "Cocktail-Mixer"
     display.setRotation(Display_Landscape_1);
     display.initialise(&SPI);  
-      
-    display.printTextCentered("Cocktail-Mixer", 16);  
+    display.drawHorizontalLine(LINEHIGHT, GAP);  
+    display.printTextCentered(TITLE, TITLEHEIGHT);  
 
 	mfrc522.PCD_Init();
 	delay(4);

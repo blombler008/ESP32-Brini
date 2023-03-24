@@ -2,6 +2,8 @@
 #define DISPLAY_HPP
 #include <Adafruit_ST7735.h>
 #include <Adafruit_GFX.h>
+#include <u8g2_fonts.h>
+#include <U8g2_for_Adafruit_GFX.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <Arduino.h>
@@ -29,12 +31,25 @@ class TFT {
         TFT(uint8_t TFT_CS, uint8_t TFT_DC, uint8_t TFT_LED_PIN, uint8_t TFT_RST);
         void initialise() {initialise(&SPI);}; 
         void initialise(SPIClass* spiClass); 
-        void setRotation(DisplayRot rot);
-        void printTextCentered(const char* string, uint8_t y);
-        void displayON();
-        void displayOFF();
+        void setRotation(DisplayRot rot)  { displayRot = rot; }
+        void setColor(DisplayColor color) { displayTextColor = color ; }
+        void setBackgroundColor(DisplayColor color) { displayBackroundColor = color ; }
+
+        void setCursor(const char* string); 
+        void printTextCentered(const char* string, uint8_t y); 
+        void print(const char* string, uint8_t x, uint8_t y); 
+
+        void drawHorizontalLine(uint8_t y, uint8_t gap);
+        void drawVerticalLine(uint8_t x, uint8_t gap);
+        void drawLine(uint8_t s, uint8_t gap, uint8_t mode);
+        void drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
+
+        void displayON()  { digitalWrite(ledPin, HIGH); };
+        void displayOFF()  { digitalWrite(ledPin, LOW); };
+        
     private: 
         Adafruit_ST7735* tft = nullptr;
+        U8G2_FOR_ADAFRUIT_GFX u8g2_for_adafruit_gfx;
         uint8_t ledPin;
         uint8_t dcPin;
         uint8_t csPin;
