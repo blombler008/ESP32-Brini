@@ -19,7 +19,7 @@ void TFT::initialise(SPIClass *spiClass){
     u8g2_for_adafruit_gfx.setFontMode(1);
     u8g2_for_adafruit_gfx.setBackgroundColor(displayBackroundColor);
     u8g2_for_adafruit_gfx.setForegroundColor(displayTextColor);
-    u8g2_for_adafruit_gfx.setFontDirection((displayRot+2)%4);
+    u8g2_for_adafruit_gfx.setFontDirection((displayRot+1)%4);
     u8g2_for_adafruit_gfx.setFont(u8g2_font_8x13B_tr);
 
     tft->initR(INITR_BLACKTAB);
@@ -47,22 +47,21 @@ void TFT::drawLine(uint8_t s, uint8_t gap, uint8_t mode) {
     switch (mode)
     {
     case 1:
-        tft->drawLine(gap, s, 128-gap, s, displayTextColor);
+        tft->drawLine(gap, s, displaySize.width-gap, s, displayTextColor);
         break;
     
     case 0:
-        tft->drawLine(s, gap, s, 160-gap, displayTextColor);
+        tft->drawLine(s, gap, s, displaySize.height-gap, displayTextColor);
         break;
     }
 }
 
 void TFT::printTextCentered(const char* str, uint8_t y) {  
-    int16_t  x1, y1;
-    uint16_t x = 16;
+    int16_t  x1, y1; 
     uint16_t w, h;
     displayOFF();
     w = u8g2_for_adafruit_gfx.getUTF8Width(str);
-    u8g2_for_adafruit_gfx.setCursor(64-w/2,y);
+    u8g2_for_adafruit_gfx.setCursor(displaySize.width/2-w/2,y);
     u8g2_for_adafruit_gfx.print(str); 
     displayON();
 } 
