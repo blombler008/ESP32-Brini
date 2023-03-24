@@ -46,18 +46,20 @@ void setup() {
     //esp_phy_erase_cal_data_in_nvs();
     pixel.begin();  
     //xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1); 
-    SR.initialise(); 
 
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
+    SR.initialise(); 
     SR.out(0xaa); 
     vTaskDelay(200); 
     SR.out(0x55); 
+
     #define GAP 8
     #define LINEHIGHT 20 
     #define TEXTHEIGHT 4 
     #define TITLEHEIGHT 16
     #define TITLE "Cocktail-Mixer"
+
     display.setRotation(Display_Landscape_1);
     display.initialise(&SPI);  
     display.drawHorizontalLine(LINEHIGHT, GAP);  
