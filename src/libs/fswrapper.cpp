@@ -1,4 +1,4 @@
-#include "fswrapper.hpp"
+#include "FSWrapper.hpp"
  
 FSWrapper::FSWrapper() {}
 
@@ -8,7 +8,7 @@ void printFileInfo(FSWrapper* w, File *file, int levels);
 
 void FSWrapper::begin(bool formatOnFail) {
     if(!LittleFS.begin(formatOnFail)){
-        Serial.println("LittleFS Mount Failed");
+        printf("LittleFS Mount Failed\n");
         return;
     }
     mounted = true;
@@ -18,17 +18,17 @@ void FSWrapper::listDir(const char * dirname, uint8_t levels){
 
     if (!mounted) return;
 
-    Serial.printf("Listing directory: %s\r\n", dirname);
+    printf("Listing directory: %s\r\n", dirname);
 
     File root = fs.open(dirname);
 
     if(!root){
-        Serial.println("- failed to open directory");
+        printf("- failed to open directory\n");
         return;
     }
 
     if(!root.isDirectory()){
-        Serial.println(" - not a directory");
+        printf(" - not a directory\n");
         return;
     }
 
@@ -48,7 +48,7 @@ void FSWrapper::createDir(const char * path){
         return;
     } 
          
-    Serial.println("mkdir failed");
+    printf("mkdir failed\n");
     
 }
 
@@ -61,7 +61,7 @@ void FSWrapper::removeDir(const char * path){
         return;
     }
     
-    Serial.println("rmdir failed"); 
+    printf("rmdir failed\n"); 
 }
 
 String FSWrapper::readFile(const char * path){
@@ -114,7 +114,7 @@ void FSWrapper::renameFile(const char* path1, const char* path2){
     
     if (!mounted) return; 
 
-    if (!fs.rename(path1, path2)) Serial.printf("Rename %s to %s failed\r\n", path1, path2);
+    if (!fs.rename(path1, path2)) printf("Rename %s to %s failed\r\n", path1, path2);
     
 }
 
@@ -122,14 +122,14 @@ void FSWrapper::deleteFile(const char* path){
     
     if (!mounted) return; 
 
-    if(!fs.remove(path)) Serial.printf("delete %s failed", path);  
+    if(!fs.remove(path)) printf("delete %s failed", path);  
 } 
 
 bool openFile(fs::File* filef, fs::FS &fs, const char* path, const char* mode) {
     fs::File file = fs.open(path, mode, false);
     
     if(!file || file.isDirectory()){
-        Serial.printf("- failed to open file: %s\r\n", path); 
+        printf("- failed to open file: %s\r\n", path); 
         return false;
     }
 
@@ -140,18 +140,9 @@ bool openFile(fs::File* filef, fs::FS &fs, const char* path, const char* mode) {
 void printLastWrite(File* file) {
     const char* format = "  LAST WRITE: %d-%02d-%02d %02d:%02d:%02d\n";
     time_t t= file->getLastWrite(); 
-    struct tm * tmstruct = localtime(&t);
-
-    int year = (tmstruct->tm_year)+1900;
-    int mon = (tmstruct->tm_mon)+1;
-    int day = tmstruct->tm_mday;
-    int hour = tmstruct->tm_hour;
-    int min = tmstruct->tm_min;
-    int sec = tmstruct->tm_sec;
-
-
-    Serial.printf(format, year, mon, day, hour, min, sec);
-    
+    String time = printTimeToString(format, t);
+     
+    printf(time.c_str());
 }
 
 void printFileInfo(FSWrapper* w, File* file, int levels) {
