@@ -19,7 +19,7 @@ void TFT::initialise(SPIClass *spiClass){
     u8g2_for_adafruit_gfx.setFontMode(1);
     u8g2_for_adafruit_gfx.setBackgroundColor(displayBackroundColor);
     u8g2_for_adafruit_gfx.setForegroundColor(displayTextColor);
-    u8g2_for_adafruit_gfx.setFontDirection(displayRot);
+    u8g2_for_adafruit_gfx.setFontDirection((displayRot+2)%4);
     u8g2_for_adafruit_gfx.setFont(u8g2_font_8x13B_tr);
 
     tft->initR(INITR_BLACKTAB);
