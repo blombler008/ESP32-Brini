@@ -6,46 +6,20 @@ WiFiServer server(8080);
 TFT display(TFT_CS, TFT_DC, TFT_LED_PIN, TFT_RST);
 ShiftRegister SR(SR_RCK_PIN, SR_CLK_PIN, SR_DATA_PIN); 
 MFRC522 mfrc522(RFID_CS, RFID_RST);
+LuaHandler luaHandler(FORMAT_LITTLEFS_IF_FAILED);
 
-TaskHandle_t fs_lua;
+TaskHandle_t fs_lua; 
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
 
 void printUID(MFRC522::Uid uid);
-  
-void fsinit(void* pvArgs) {
     
-    FSWrapper fswrapper;
-    fswrapper.begin(FORMAT_LITTLEFS_IF_FAILED);
-    fswrapper.listDir("/", 0); 
-    
-    LuaWrapper lua; 
-    LuaHandler luaHandler(lua.L());  
-
-    const String constants = (const String) lua.addConstants();
-    lua.Lua_dostring(&constants);
-    
-    String result = lua.Lua_doFile("/littlefs/test.lua");
-    if (!result.isEmpty()) Serial.println(result);
- 
-    while(true) {
-        luaHandler.executeLoop(); 
-        uint32_t color = luaHandler.executeSetPixel(); 
-
-        pixel.setPixelColor(0, color);
-        pixel.setBrightness(10);
-        pixel.show(); 
-
-        luaHandler.wait(50000);
-        portYIELD();
-    }
-    vTaskDelete(fs_lua);
-}
-
 void setup() { 
     Serial.begin(115200);  
     //esp_phy_erase_cal_data_in_nvs();
     pixel.begin();  
-    //xTaskCreatePinnedToCore(fsinit, "fs_lua", 10000, NULL, 1, &fs_lua, 1); 
+    
+    luaHandler.initialize();
+    luaHandler.start();
 
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
@@ -53,7 +27,9 @@ void setup() {
     SR.out(0xaa); 
     vTaskDelay(200); 
     SR.out(0x55); 
-
+    vTaskDelay(200);
+	SR.out(0);
+ 
     #define GAP 8
     #define LINEHIGHT 20 
     #define TEXTHEIGHT 4 
@@ -65,14 +41,12 @@ void setup() {
     display.drawHorizontalLine(LINEHIGHT, GAP);  
     display.printTextCentered(TITLE, TITLEHEIGHT);  
 
-	mfrc522.PCD_Init();
-	delay(4);
+	mfrc522.PCD_Init(); 
+    vTaskDelay(4);
 	mfrc522.PCD_DumpVersionToSerial();
+
+
 	Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
-
-    vTaskDelay(200);
-	SR.out(0);
-
 
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
     while (WiFi.status() != WL_CONNECTED) {

@@ -64,6 +64,7 @@
         "millis",
         "delay",
         "loop",
-        "setPixel"
+        "setPixel",
+        "setup"
     ]
 }

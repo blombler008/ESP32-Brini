@@ -3,16 +3,25 @@
 #include <LuaWrapper.h> 
 #include <Adafruit_NeoPixel.h>
 #include "PrintHelper.hpp"
+#include "FSWrapper.hpp"
 
 class LuaHandler {
     public:
-        LuaHandler(lua_State* L);
+        LuaHandler(bool formatOnFail = false);
+        void initialize();
+        void start();
         uint32_t executeSetPixel();
         void executeLoop();
+        void executeSetup();
         void wait(int hold);
 
     private:
+        void lua_loop0(void);
         lua_State* L;
+        LuaWrapper luaWrapper;
+        FSWrapper fswrapper;
+        bool formatOnFail;
+        TaskHandle_t fs_lua; 
 };
 
 #endif
