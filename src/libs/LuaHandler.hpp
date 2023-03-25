@@ -9,8 +9,7 @@ class LuaHandler {
     public:
         LuaHandler(bool formatOnFail = false);
         void initialize();
-        void start();
-        uint32_t executeSetPixel();
+        void start(); 
         void executeLoop();
         void executeSetup();
         void wait(int hold);

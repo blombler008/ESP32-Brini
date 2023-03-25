@@ -47,16 +47,33 @@ void TFT::drawLine(uint8_t s, uint8_t gap, uint8_t mode) {
     switch (mode)
     {
     case 1:
-        tft->drawLine(gap, s, displaySize.width-gap, s, displayTextColor);
+        tft->drawLine(gap, s, displaySize.width-gap-1, s, displayTextColor);
         break;
     
     case 0:
-        tft->drawLine(s, gap, s, displaySize.height-gap, displayTextColor);
+        tft->drawLine(s, gap, s, displaySize.height-gap-1, displayTextColor);
         break;
     }
 }
 
-void TFT::printTextCentered(const char* str, uint8_t y) {  
+DisplaySize TFT::getSize() {
+    return displaySize;
+}
+
+void TFT::addButton(const char *label, uint8_t y) { 
+    uint8_t x = 8;
+    const char* x2 = "";
+    
+    tft->drawRoundRect(x, y, displaySize.width-x*4, x*2, x, Display_Color_White);  
+    u8g2_for_adafruit_gfx.setFont(u8g2_font_6x12_tr); 
+    print(label, x*2, y+12); 
+}
+
+void TFT::setCursor(uint8_t x, uint8_t y) {
+    tft->setCursor(x, y);
+}
+
+void TFT::printTextCentered(const char *str, uint8_t y) {
     int16_t  x1, y1; 
     uint16_t w, h;
     displayOFF();
@@ -64,4 +81,11 @@ void TFT::printTextCentered(const char* str, uint8_t y) {
     u8g2_for_adafruit_gfx.setCursor(displaySize.width/2-w/2,y);
     u8g2_for_adafruit_gfx.print(str); 
     displayON();
-} 
+}
+
+void TFT::print(const char *string, uint8_t x, uint8_t y) {
+    displayOFF();
+    u8g2_for_adafruit_gfx.setCursor(x,y);
+    u8g2_for_adafruit_gfx.print(string); 
+    displayON();
+}

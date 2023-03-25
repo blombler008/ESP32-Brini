@@ -29,24 +29,7 @@ void LuaHandler::initialize() {
 void LuaHandler::start() {
     xTaskCreatePinnedToCore([](void* o){ ((LuaHandler*)o)->lua_loop0(); }, "lua_loop", 10000, this, 1, &fs_lua, 1);  
 }
-
-uint32_t LuaHandler::executeSetPixel () {
-    const char* function = "setPixel";
-    int color[3] = {255, 255, 0};  
-    lua_getglobal(L, function);
-    if(lua_isfunction(L, -1)) {  
-        int args = lua_gettop(L);
-        if(lua_pcall(L, 0, 3, 0) != 0)
-            printErrorRunningFunction(function, lua_tostring(L, -1));  
-        
-        args = lua_gettop(L) - args;
-        for(int i=0; i<=args; i++) {
-            color[i] = readLuaInt(L, function);
-        }
-    }
-    return Adafruit_NeoPixel::ColorHSV(color[2], color[1], color[0]);
-}
-
+ 
 void LuaHandler::executeLoop() { 
     const char* function = "loop";
     lua_getglobal(L, function);
@@ -80,13 +63,7 @@ void LuaHandler::lua_loop0(void) {
  
     executeSetup(); 
     while(true) {
-        executeLoop(); 
-        uint32_t color = executeSetPixel(); 
-
-        // pixel.setPixelColor(0, color);
-        // pixel.setBrightness(10);
-        // pixel.show(); 
-
+        executeLoop();
         wait(50000);
         portYIELD();
     }

@@ -15,7 +15,7 @@ void printUID(MFRC522::Uid uid);
     
 void setup() { 
     Serial.begin(115200);  
-    //esp_phy_erase_cal_data_in_nvs();
+    esp_phy_erase_cal_data_in_nvs();
     pixel.begin();  
     
     luaHandler.initialize();
@@ -29,7 +29,7 @@ void setup() {
     SR.out(0x55); 
     vTaskDelay(200);
 	SR.out(0);
- 
+    
     #define GAP 8
     #define LINEHIGHT 20 
     #define TEXTHEIGHT 4 
@@ -39,11 +39,21 @@ void setup() {
     display.setRotation(Display_Landscape_1);
     display.initialise(&SPI);  
     display.drawHorizontalLine(LINEHIGHT, GAP);  
-    display.printTextCentered(TITLE, TITLEHEIGHT);  
-
-	mfrc522.PCD_Init(); 
+    display.printTextCentered(TITLE, TITLEHEIGHT);   
+    DisplaySize size = display.getSize();
+    display.drawLine(size.width-GAP*2, LINEHIGHT+GAP, size.width-GAP*2, size.height-GAP);
+    const char* format = "Menu Item %i";
+    
+    for(int i=0; i<5;i++) { 
+        char men[strlen(format)] = {};
+        sprintf((char*)&men, format, i);
+        display.addButton(men, LINEHIGHT+GAP/2+LINEHIGHT*i);
+    }
+ 
+        
+    mfrc522.PCD_Init(); 
     vTaskDelay(4);
-	mfrc522.PCD_DumpVersionToSerial();
+    mfrc522.PCD_DumpVersionToSerial();
 
 
 	Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
