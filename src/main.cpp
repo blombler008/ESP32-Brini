@@ -1,13 +1,20 @@
 #include <config.hpp>  
 #include <libs/Encoder.hpp>
+#include <libs/Menu.hpp>
+    
+#define GAP 8
+#define LINEHIGHT 20 
+#define TEXTHEIGHT 4 
+#define TITLEHEIGHT 16
+#define TITLE "Cocktail-Mixer"
 WiFiUDP udp;
 WiFiServer server(8080);
-Encoder encoder(1,2,3);
-
+Encoder encoder(1,2,3); 
 TFT display(TFT_CS, TFT_DC, TFT_LED_PIN, TFT_RST);
 ShiftRegister SR(SR_RCK_PIN, SR_CLK_PIN, SR_DATA_PIN); 
 MFRC522 mfrc522(RFID_CS, RFID_RST);
-LuaHandler luaHandler(FORMAT_LITTLEFS_IF_FAILED);
+LuaHandler luaHandler(FORMAT_LITTLEFS_IF_FAILED); 
+Menu menu(&display, &encoder, TITLE);
 
 TaskHandle_t fs_lua; 
 Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
@@ -30,30 +37,21 @@ void setup() {
     SR.out(0x55); 
     vTaskDelay(200);
 	SR.out(0);
-    
-    #define GAP 8
-    #define LINEHIGHT 20 
-    #define TEXTHEIGHT 4 
-    #define TITLEHEIGHT 16
-    #define TITLE "Cocktail-Mixer"
-
+  
     display.setRotation(Display_Landscape_1);
+    encoder.initialize(); 
     display.initialise(&SPI);  
-    display.drawHorizontalLine(LINEHIGHT, GAP);  
-    display.printTextCentered(TITLE, TITLEHEIGHT);   
-    DisplaySize size = display.getSize();
-    display.drawLine(size.width-GAP*2, LINEHIGHT+GAP, size.width-GAP*2, size.height-GAP);
-    const char* format = "Menu Item %i";
-    
-    for(int i=0; i<5;i++) { 
-        char men[strlen(format)] = {};
-        sprintf((char*)&men, format, i);
-        display.addButton(men, LINEHIGHT+GAP/2+LINEHIGHT*i);
-    }
- 
+    menu.initialize();
 
-    encoder.initialize();
-        
+    menu.addItem(0, "Orangen Saft");
+    menu.addItem(1, "Multivitamin Saft");
+    menu.addItem(2, "Vodka");
+    menu.addItem(3, "Tee");
+    menu.addItem(4, "Tee mit Schuss");
+    menu.addItem(5, "Apfel Saft");
+
+    menu.update();
+ 
     mfrc522.PCD_Init(); 
     vTaskDelay(4);
     mfrc522.PCD_DumpVersionToSerial();

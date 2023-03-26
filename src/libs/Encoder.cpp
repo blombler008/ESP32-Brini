@@ -31,10 +31,17 @@ void Encoder::initialize() {
     gpio_isr_handler_add(gpio_num_t(A), isr_rot, this); 
 }
 
+void Encoder::setCallback(callback c, void* ty) {
+    cb = c;
+    cls = ty;
+}
+
 void Encoder::loop() {
     uint16_t data = 0;
     xQueueReceiveFromISR(queue, &data, 0); 
-    if(data != 0) Serial.println(data, HEX);
+    if(data != 0) { 
+        (*cb)(encoder_actions(data), cls);  
+    }  
 }
 
 uint8_t Encoder::getB() {

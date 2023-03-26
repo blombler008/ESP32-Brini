@@ -60,8 +60,9 @@ class TFT {
         void setColor(DisplayColor color) { displayTextColor = color ; }
         void setBackgroundColor(DisplayColor color) { displayBackroundColor = color ; }
 
-
+        void clear(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
         void addButton(const char* label, uint8_t y);
+        void addSelectedButton(const char* label, uint8_t y);
         void setCursor(uint8_t x, uint8_t y); 
         void printTextCentered(const char* string, uint8_t y); 
         void print(const char* string, uint8_t x, uint8_t y); 

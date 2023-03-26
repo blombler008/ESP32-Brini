@@ -60,11 +60,30 @@ DisplaySize TFT::getSize() {
     return displaySize;
 }
 
-void TFT::addButton(const char *label, uint8_t y) { 
+void TFT::clear(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+    tft->fillRect(x0, y0, x1-x0, y1-y0, Display_Color_Black);
+}
+
+void TFT::addButton(const char *label, uint8_t y)
+{
     uint8_t x = 8;
     const char* x2 = "";
     
+    tft->fillRoundRect(x, y, displaySize.width-x*4, x*2, x, Display_Color_Black);  
     tft->drawRoundRect(x, y, displaySize.width-x*4, x*2, x, Display_Color_White);  
+    u8g2_for_adafruit_gfx.setForegroundColor(Display_Color_White); 
+    u8g2_for_adafruit_gfx.setBackgroundColor(Display_Color_Black); 
+    u8g2_for_adafruit_gfx.setFont(u8g2_font_6x12_tr); 
+    print(label, x*2, y+12);
+}
+
+void TFT::addSelectedButton(const char *label, uint8_t y) { 
+    uint8_t x = 8;
+    const char* x2 = "";
+    
+    tft->fillRoundRect(x, y, displaySize.width-x*4, x*2, x, Display_Color_White);  
+    u8g2_for_adafruit_gfx.setForegroundColor(Display_Color_Black); 
+    u8g2_for_adafruit_gfx.setBackgroundColor(Display_Color_White); 
     u8g2_for_adafruit_gfx.setFont(u8g2_font_6x12_tr); 
     print(label, x*2, y+12); 
 }
@@ -76,16 +95,12 @@ void TFT::setCursor(uint8_t x, uint8_t y) {
 void TFT::printTextCentered(const char *str, uint8_t y) {
     int16_t  x1, y1; 
     uint16_t w, h;
-    displayOFF();
     w = u8g2_for_adafruit_gfx.getUTF8Width(str);
     u8g2_for_adafruit_gfx.setCursor(displaySize.width/2-w/2,y);
     u8g2_for_adafruit_gfx.print(str); 
-    displayON();
 }
 
 void TFT::print(const char *string, uint8_t x, uint8_t y) {
-    displayOFF();
     u8g2_for_adafruit_gfx.setCursor(x,y);
     u8g2_for_adafruit_gfx.print(string); 
-    displayON();
 }

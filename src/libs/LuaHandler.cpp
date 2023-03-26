@@ -58,7 +58,7 @@ void LuaHandler::wait(int hold) {
 }
 
 void LuaHandler::lua_loop0(void) { 
-    String result = luaWrapper.Lua_doFile("/littlefs/test.lua");
+    String result = luaWrapper.Lua_doFile("/littlefs/autoinit.lua");
     if (!result.isEmpty()) Serial.println(result);
  
     executeSetup(); 
