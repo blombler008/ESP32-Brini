@@ -1,7 +1,8 @@
 #include <config.hpp>  
- 
+#include <libs/Encoder.hpp>
 WiFiUDP udp;
 WiFiServer server(8080);
+Encoder encoder(1,2,3);
 
 TFT display(TFT_CS, TFT_DC, TFT_LED_PIN, TFT_RST);
 ShiftRegister SR(SR_RCK_PIN, SR_CLK_PIN, SR_DATA_PIN); 
@@ -50,6 +51,8 @@ void setup() {
         display.addButton(men, LINEHIGHT+GAP/2+LINEHIGHT*i);
     }
  
+
+    encoder.initialize();
         
     mfrc522.PCD_Init(); 
     vTaskDelay(4);
@@ -144,7 +147,7 @@ void loop() {
 		Serial.println("[TCP] Connection Closed"); 
         SR.out(0);	
 	}  
-    
+    encoder.loop();
 
 }
  
