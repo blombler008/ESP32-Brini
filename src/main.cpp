@@ -43,12 +43,14 @@ void setup() {
     display.initialise(&SPI);  
     menu.initialize();
 
-    menu.addItem(0, "Orangen Saft");
-    menu.addItem(1, "Multivitamin Saft");
-    menu.addItem(2, "Vodka");
-    menu.addItem(3, "Tee");
-    menu.addItem(4, "Tee mit Schuss");
-    menu.addItem(5, "Apfel Saft");
+    menu.addItem(0, "Apfel Saft");
+    menu.addItem(1, "Kaffee");
+    menu.addItem(2, "BaKi");
+    menu.addItem(3, "Orangen Saft");
+    menu.addItem(4, "Multivitamin Saft");
+    menu.addItem(5, "Vodka");
+    menu.addItem(6, "Tee");
+    menu.addItem(7, "Tee mit Schuss");
 
     menu.update();
  

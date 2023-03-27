@@ -3,7 +3,7 @@
 
 #include "Display.hpp"
 #include "Encoder.hpp"
-    
+#include <stdio.h>
 typedef struct MenuItem { 
     int selected = 0;
     int id = -1;
@@ -28,7 +28,8 @@ class Menu {
         int currentSelected = 0;
         int lastItem = 0;
         const char* title;
-        MenuItem_t items[10];
+        
+        MenuItem_t* items;
         int lineheight = 20, gap = 8;
 
 };
