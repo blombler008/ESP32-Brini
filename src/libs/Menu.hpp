@@ -4,8 +4,7 @@
 #include "Display.hpp"
 #include "Encoder.hpp"
 #include <stdio.h>
-typedef struct MenuItem { 
-    int selected = 0;
+typedef struct MenuItem {  
     int id = -1;
     String itemName;
 } MenuItem_t;

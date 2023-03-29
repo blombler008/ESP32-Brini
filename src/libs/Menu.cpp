@@ -11,18 +11,18 @@ void turn(encoder_actions action, void* o) {
     switch (action)
     {
     case RIGHT:
-        (*menu).scrollUp();
+        menu->scrollUp();
         break; 
     case LEFT:
-        (*menu).scrollDown();
+        menu->scrollDown();
         break; 
     case BUTTON:
-        (*menu).select();
+        menu->select();
         break; 
     default:
         break;
     }
-    (*menu).update();
+    menu->update();
 }
 
 void Menu::initialize() {
@@ -47,11 +47,9 @@ void Menu::scrollUp() {
 void Menu::select() { 
     if(currentSelected < 0) currentSelected = lastItem-1;
     currentSelected %= lastItem; 
-    for(int i=0; i<=lastItem; i++) { 
-        MenuItem* item = &(items[i]); 
-        item->selected = 0;
-    }  
-    items[currentSelected].selected = 1;
+    // for(int i=0; i<=lastItem; i++) { 
+    //     MenuItem* item = &(items[i]);  
+    // }   
 }
 
 void Menu::addItem(int id, const char* label) {  
@@ -62,49 +60,41 @@ void Menu::addItem(int id, const char* label) {
         }
     }
     lastItem++;
-    MenuItem_t item = MenuItem();
-    printf("size: %i", lastItem);
-    printf(", item: %p", &item);
+    MenuItem_t item = MenuItem(); 
     item.itemName = String(label);
-    item.id = id;
-    item.selected = id == 0 ? 1 : 0;
+    item.id = id; 
     lastItem = id > lastItem ? id : lastItem;
     newItems[lastItem-1] = item;
     items = newItems;
-    printf(", item Name: %s\n", (&newItems[lastItem-1])->itemName);
 }
 
 void Menu::update() {
-    int offset = getSelectedItem(); 
-    offset=floor(offset/5)*5;
-    printf("%i .. %i\n", offset, getSelectedItem());
-    MenuItem* newItemList [5] = {}; 
-    printf("%i .. %i\n", offset, offset+5);
-    for(int i=0; i<5; i++) {
-        printf("%p .. ", &(items[i+offset]));
-        if(i+offset > lastItem-1) continue;
-        if(&(items[i+offset]) == nullptr) continue;
-        MenuItem* item = &(items[i+offset]); 
+    int offset = getSelectedItem();  
+    MenuItem* newItemList [5] = {};  
+    int conCurrentItem;
+    for(int i=0; i<5; i++) { 
+        conCurrentItem = i+offset; 
+        conCurrentItem %= lastItem; 
+        if(conCurrentItem > lastItem-1) continue;
+        if(&(items[conCurrentItem]) == nullptr) continue;
+
+        MenuItem* item = &(items[conCurrentItem]); 
         if(item->id == -1) continue;
         newItemList[i] = item;
-    } 
-    printf("\n");
+    }  
 
     DisplaySize size = display->getSize();
-    display->clear(gap, lineheight+gap/2, size.width-gap*2, size.height-gap);
-    printf("%i .. %i\n", offset, offset+5);
+    //display->clear(gap, lineheight+gap/2, size.width-gap*2, size.height-gap); 
         
-    for(int i=0; i<5; i++) {  
-        printf("%p .. ", newItemList[i]);
+    for(int i=0; i<5; i++) {   
         if(newItemList[i] == nullptr) continue;
         MenuItem* item = newItemList[i];
-        if(item->selected == 1) {
+        if(i == 2) {
             display->addSelectedButton(item->itemName.c_str(), lineheight+gap/2+lineheight*i);
             continue;
         }
         display->addButton(item->itemName.c_str(), lineheight+gap/2+lineheight*i);
-    }   
-    printf("\n");
+    }    
 }
 
 int Menu::getSelectedItem() {
