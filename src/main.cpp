@@ -1,10 +1,10 @@
 #include <config.hpp>   
 
 WiFiHelper wifi;
+MFRC mfrc;
 Encoder encoder(ENC_A, ENC_B, ENC_SW); 
 TFT display(TFT_CS, TFT_DC, TFT_LED_PIN, TFT_RST);
 ShiftRegister SR(SR_RCK_PIN, SR_CLK_PIN, SR_DATA_PIN); 
-MFRC mfrc;
 LuaHandler luaHandler(FORMAT_LITTLEFS_IF_FAILED); 
 Menu menu(&display, &encoder, TITLE);
 
@@ -12,8 +12,9 @@ Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
 
     
 void setup() { 
-    Serial.begin(115200);  
     esp_phy_erase_cal_data_in_nvs();
+    
+    Serial.begin(SERIAL_BAUD);  
     pixel.begin();  
     
     luaHandler.initialize();
