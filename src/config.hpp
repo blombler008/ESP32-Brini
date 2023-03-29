@@ -5,6 +5,9 @@
 #include <libs/Display.hpp>
 #include <libs/ShiftRegister.hpp>
 #include <libs/LuaHandler.hpp>
+#include <libs/Encoder.hpp>
+#include <libs/Menu.hpp>
+#include <libs/WiFiHelper.hpp>
 
 #include <phy_init_data.h>
 #include <FreeRTOS.h>
@@ -23,11 +26,8 @@
 #include <LuaWrapper.h> 
 #include <LittleFS.h>
  
-#include <MFRC522.h>
-
-#ifndef CONFIG_LITTLEFS_FOR_IDF_3_2
- #include <time.h>
-#endif
+#include <MFRC522.h> 
+#include <time.h>
  
 #define FORMAT_LITTLEFS_IF_FAILED false
 
@@ -36,12 +36,12 @@
 
 
 // Constants 
-#define WIFI_SSID "Wickinger"
-#define WIFI_HOSTNAME "ESP32S2.local"
-#define WIFI_PASSWORD "EJYBmZ3pRdkHu614B8DC" // secret
+#define WIFI_SSID       "Wickinger"
+#define WIFI_HOSTNAME   "ESP32S2.local"
+#define WIFI_PASSWORD   "EJYBmZ3pRdkHu614B8DC" // secret "DON'T TELL ANYONE"
 
 // serial
-#define SERIAL_BAUD 115200
+#define SERIAL_BAUD     115200
   
 // Register Serial Pins
 #define SR_CLK_PIN      4   // shift clock
@@ -50,6 +50,10 @@
 #define SR_RCK_PIN      7   // storage clock
 #define SR_CLR_PIN      15  // storage & shift register clear
 
+// ENCODER SWITCHES
+#define ENC_A           1
+#define ENC_B           2 
+#define ENC_SW          3
 
 // SPI pins
 #define SPI_SCK         36  // CLOCK
@@ -64,7 +68,13 @@
 #define TFT_RST         19
 #define TFT_LED_PIN     38
 
-//  
+// Menu Information
+
+#define GAP             8
+#define LINEHIGHT       20
+#define TEXTHEIGHT      4
+#define TITLEHEIGHT     16
+#define TITLE           "Cocktail-Mixer"
 
 
 
