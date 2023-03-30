@@ -10,8 +10,8 @@ typedef struct {
     const char* ssid;
     const char* password;
     const char* hostname;
-    uint8_t udp_port;
-    uint8_t server_port; 
+    uint16_t udp_port;
+    uint16_t server_port; 
 } WiFiHelperConfig_t;
 
 typedef enum {
@@ -29,11 +29,10 @@ private:
     const char* wifi_ssid;
     const char* wifi_password;
     const char* wifi_hostname;
-    uint8_t udp_port;
-    uint8_t server_port;
+    uint16_t udp_port;
+    uint16_t server_port;
     TaskHandle_t wifi_helper; 
 public:
-    WiFiHelper();
     void wifi_loop0();
     void begin(WiFiHelperConfig_t* wifiConfig);
     WiFiHelperStates getWifiStatus() {return status;};

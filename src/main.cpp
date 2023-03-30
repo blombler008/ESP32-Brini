@@ -1,7 +1,7 @@
 #include <config.hpp>   
 
 WiFiHelper wifi;
-MFRC mfrc;
+MFRC mfrc(RFID_CS, RFID_RST);
 Encoder encoder(ENC_A, ENC_B, ENC_SW); 
 TFT display(TFT_CS, TFT_DC, TFT_LED_PIN, TFT_RST);
 ShiftRegister SR(SR_RCK_PIN, SR_CLK_PIN, SR_DATA_PIN); 
@@ -45,10 +45,10 @@ void setup() {
 
     menu.update();
     
-    mfrc.begin(RFID_CS, RFID_RST); 
+    mfrc.begin(); 
     vTaskDelay(4);
     mfrc.PCD_DumpVersionToSerial(); 
-	Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks...")); 
+	Serial.println("Scan PICC to see UID, SAK, type, and data blocks..."); 
 
     WiFiHelperConfig_t wifiConfig;
     wifiConfig.hostname = WIFI_HOSTNAME;

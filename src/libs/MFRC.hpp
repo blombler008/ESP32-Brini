@@ -9,10 +9,11 @@ class MFRC {
         uint8_t cs;
         uint8_t rst;
     public:
-        MFRC();
-        void begin(uint8_t cs, uint8_t rst);
+        MFRC(uint8_t cs, uint8_t rst);
+        void begin();
         void PCD_DumpVersionToSerial();
         void PCD_UIDToSerial(MFRC522::Uid uid);
+        void PCD_UIDToString(char* buffer, MFRC522::Uid uid);
 }; 
 
 
