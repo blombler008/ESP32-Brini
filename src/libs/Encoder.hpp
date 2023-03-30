@@ -15,6 +15,7 @@ typedef enum encoder_actions{
 typedef void (*callback)(encoder_actions_t, void*);
 void IRAM_ATTR isr_sw(void* o);
 void IRAM_ATTR isr_rot(void* o);
+
 class Encoder {
     public: 
         Encoder(uint8_t A, uint8_t B, uint8_t sw) { Encoder::A = A; Encoder::B = B; Encoder::sw = sw; };

@@ -20,17 +20,27 @@ void WiFiHelper::begin(WiFiHelperConfig_t* wifiConfig) {
     server.setTimeout(20);
     udp.begin(udp_port);
 
-    xTaskCreatePinnedToCore([](void* o){ ((WiFiHelper*)o)->wifi_loop0(); }, "wifi_loop", 10000, this, 1, &wifi_helper, 0);  
+    xTaskCreatePinnedToCore(wifi_loop0, "wifi_loop", 10000, this, 1, &wifi_helper, 0);  
 }
 
+void WiFiHelper::sendData(CMDMessage* msg) {
+    xQueueSendToBack(queue, (void*)(msg), 0);
+}
 
-void WiFiHelper::wifi_loop0() {
+WiFiHelper::WiFiHelper() {
+    queue = xQueueCreate(5, sizeof(CMDMessage));
+}
+
+void wifi_loop0(void* o) {
+    WiFiHelper* helper = (WiFiHelper*)o;
+    WiFiUDP udp = helper->udp;
+    WiFiServer server = helper->server;
     while(1) {
         int packetSize = udp.parsePacket();
 
-        status = NOTCONNECTED;
+        helper->status = NOTCONNECTED;
         if (packetSize) {
-            status = UDPCONNECTED;
+            helper->status = UDPCONNECTED;
             byte buffer[packetSize];
             udp.read(buffer, packetSize);
             String message = String((char*)buffer);
@@ -47,7 +57,7 @@ void WiFiHelper::wifi_loop0() {
         }
 
         if(server.hasClient()) {
-            status = TCPCONNECTED;
+            helper->status = TCPCONNECTED;
             Serial.println("[TCP] Connecting");
             WiFiClient client = server.available(); 
             while(client.connected()) {   
@@ -65,6 +75,7 @@ void WiFiHelper::wifi_loop0() {
                     break;
                 }
             }
+            
             while(client.connected()) {   
                 if (client.available()) { 
                     String data = client.readString();
@@ -77,25 +88,18 @@ void WiFiHelper::wifi_loop0() {
                         client.printf("uid get\n");
                         client.flush();  
                     }
-                }  
-                // if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
-                    
-                //     printUID(mfrc522.uid);
-                //     client.printf("uid set ");
-                //     for (int i = 0; i < mfrc522.uid.size; i++)
-                //     {
-                //         if (i > 0) client.printf(":");
-                //         client.printf("%02X", mfrc522.uid.uidByte[i]);
-                //     }
-                //     client.printf("\n");
-                //     client.flush();  
-                    
-                // }
+                }
+                  
+                CMDMessage data;
+                if(xQueueReceive(helper->queue, (void*)(&data), 0)) {
+                    Serial.printf("Sending: %s\n", data.data);
+                    client.write(data.data);
+                    client.flush(); 
+                }
             } 
-            server.stopAll(); 
-            Serial.println("[TCP] Connection Closed"); 
-            status = NONE;
+            server.stopAll();
+            helper->status = NONE;
         }  
     }
-    
+    vTaskDelete(helper->wifi_helper);
 }

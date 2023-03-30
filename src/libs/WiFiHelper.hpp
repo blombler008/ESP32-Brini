@@ -5,6 +5,7 @@
 #include <WiFiUdp.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
+#include <freertos/queue.h> 
 
 typedef struct {
     const char* ssid;
@@ -21,21 +22,29 @@ typedef enum {
     TCPCONNECTED = 7
 } WiFiHelperStates;
 
+typedef struct {
+    uint8_t msgid;
+    char data[30];
+} CMDMessage;
+
+void wifi_loop0(void* o);
 class WiFiHelper {
 private: 
-    WiFiHelperStates status;
-    WiFiUDP udp;
-    WiFiServer server;
     const char* wifi_ssid;
     const char* wifi_password;
     const char* wifi_hostname;
     uint16_t udp_port;
     uint16_t server_port;
-    TaskHandle_t wifi_helper; 
 public:
-    void wifi_loop0();
+    QueueHandle_t queue;
+    WiFiHelperStates status = NONE;
+    WiFiUDP udp;
+    WiFiServer server;
+    TaskHandle_t wifi_helper; 
+    WiFiHelper(); 
     void begin(WiFiHelperConfig_t* wifiConfig);
     WiFiHelperStates getWifiStatus() {return status;};
+    void sendData(CMDMessage* msg);
 };
 
 
