@@ -9,21 +9,19 @@ Menu::Menu(TFT* display, Encoder* encoder, const char* title) {
 
 void turn(encoder_actions action, void* o) { 
     Menu* menu = ((Menu*) o); 
-    switch (action)
-    {
+    switch (action) {
     case RIGHT:
         menu->scrollUp();
+        menu->update();
         break; 
     case LEFT:
         menu->scrollDown();
+        menu->update();
         break; 
     case BUTTON:
         menu->select();
-        break; 
-    default:
-        break;
+        break;  
     }
-    menu->update();
 }
 
 void Menu::begin() {
@@ -36,21 +34,16 @@ void Menu::begin() {
 }
 
 void Menu::scrollDown() {
-    currentSelected++;
-    select();
+    currentSelected++; 
 }
 
 void Menu::scrollUp() {
-    currentSelected--;
-    select();
+    currentSelected--; 
 }
 
 void Menu::select() { 
-    if(currentSelected < 0) currentSelected = lastItem-1;
-    currentSelected %= lastItem; 
-    // for(int i=0; i<=lastItem; i++) { 
-    //     MenuItem* item = &(items[i]);  
-    // }   
+    MenuItem_t* item = displayItems[2];
+    
 }
 
 void Menu::addItem(int id, const char* label) {  
@@ -61,7 +54,7 @@ void Menu::addItem(int id, const char* label) {
         }
     }
     lastItem++;
-    MenuItem_t item = MenuItem(); 
+    MenuItem_t item = MenuItem_t(); 
     item.itemName = String(label);
     item.id = id; 
     lastItem = id > lastItem ? id : lastItem;
@@ -69,9 +62,22 @@ void Menu::addItem(int id, const char* label) {
     items = newItems;
 }
 
-void Menu::update() {
-    int offset = getSelectedItem();  
-    MenuItem* newItemList [5] = {};  
+void Menu::redraw() { 
+    for(int i=0; i<5; i++) {   
+        if(displayItems[i] == nullptr) continue;
+        MenuItem_t* item = displayItems[i];
+        if(i == 2) {
+            display->addSelectedButton(item->itemName.c_str(), lineheight+gap/2+lineheight*i);
+            continue;
+        }
+        display->addButton(item->itemName.c_str(), lineheight+gap/2+lineheight*i);
+    }    
+}
+
+void Menu::changeOffset() {
+    if(currentSelected < 0) currentSelected = lastItem-1;
+    currentSelected %= lastItem; 
+    int offset = getSelectedItem();   
     int conCurrentItem;
     for(int i=0; i<5; i++) { 
         conCurrentItem = i+offset; 
@@ -79,21 +85,15 @@ void Menu::update() {
         if(conCurrentItem > lastItem-1) continue;
         if(&(items[conCurrentItem]) == nullptr) continue;
 
-        MenuItem* item = &(items[conCurrentItem]); 
+        MenuItem_t* item = &(items[conCurrentItem]); 
         if(item->id == -1) continue;
-        newItemList[i] = item;
-    }  
- 
-        
-    for(int i=0; i<5; i++) {   
-        if(newItemList[i] == nullptr) continue;
-        MenuItem* item = newItemList[i];
-        if(i == 2) {
-            display->addSelectedButton(item->itemName.c_str(), lineheight+gap/2+lineheight*i);
-            continue;
-        }
-        display->addButton(item->itemName.c_str(), lineheight+gap/2+lineheight*i);
-    }    
+        displayItems[i] = item;
+    }
+}
+
+void Menu::update() {
+    changeOffset();
+    redraw();
 }
 
 int Menu::getSelectedItem() {

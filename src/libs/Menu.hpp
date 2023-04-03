@@ -5,10 +5,12 @@
 #include "Encoder.hpp"
 #include <stdio.h>
 #include <Ticker.h>
-typedef struct MenuItem {  
+typedef struct {  
     int id = -1;
     String itemName;
 } MenuItem_t;
+
+// TODO: Callback fuers selected item;
 
 class Menu {
     public: 
@@ -16,6 +18,8 @@ class Menu {
         void begin();
         void addItem(int id, const char* label);
         void update();
+        void redraw();
+        void changeOffset();
         void scrollDown();
         void scrollUp();
         void select();
@@ -39,6 +43,7 @@ class Menu {
         const char* title;
         
         MenuItem_t* items;
+        MenuItem_t* displayItems [5];
         int lineheight = 20, gap = 8;
 
 };
