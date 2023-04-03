@@ -23,12 +23,12 @@ void WiFiHelper::begin(WiFiHelperConfig_t* wifiConfig) {
     xTaskCreatePinnedToCore(wifi_loop0, "wifi_loop", 10000, this, 1, &wifi_helper, 0);  
 }
 
-void WiFiHelper::sendData(CMDMessage* msg) {
+void WiFiHelper::sendData(WiFiCommand* msg) {
     xQueueSendToBack(queue, (void*)(msg), 0);
 }
 
 WiFiHelper::WiFiHelper() {
-    queue = xQueueCreate(5, sizeof(CMDMessage));
+    queue = xQueueCreate(5, sizeof(WiFiCommand));
 }
 
 void wifi_loop0(void* o) {
@@ -90,7 +90,7 @@ void wifi_loop0(void* o) {
                     }
                 }
                   
-                CMDMessage data;
+                WiFiCommand data;
                 if(xQueueReceive(helper->queue, (void*)(&data), 0)) {
                     Serial.printf("Sending: %s\n", data.data);
                     client.write(data.data);
@@ -103,3 +103,4 @@ void wifi_loop0(void* o) {
     }
     vTaskDelete(helper->wifi_helper);
 }
+ 

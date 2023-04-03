@@ -1,7 +1,7 @@
 #include "Encoder.hpp"
  
 
-void Encoder::initialize() {
+void Encoder::begin() {
     queue = xQueueCreate(50, sizeof(uint16_t));
     gpio_config_t confA;
     confA.intr_type = GPIO_INTR_NEGEDGE;

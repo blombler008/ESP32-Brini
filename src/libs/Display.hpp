@@ -36,8 +36,8 @@ const DisplayRot  Display_Landscape_1 = 3;
 class TFT {
     public:
         TFT(uint8_t TFT_CS, uint8_t TFT_DC, uint8_t TFT_LED_PIN, uint8_t TFT_RST);
-        void initialise() {initialise(&SPI);}; 
-        void initialise(SPIClass* spiClass); 
+        void begin() {begin(&SPI);}; 
+        void begin(SPIClass* spiClass); 
         void setRotation(DisplayRot rot)  { 
             displayRot = rot; 
             switch (rot) 
@@ -60,6 +60,7 @@ class TFT {
         void setColor(DisplayColor color) { displayTextColor = color ; }
         void setBackgroundColor(DisplayColor color) { displayBackroundColor = color ; }
 
+        void setFont(const uint8_t * font);
         void clear(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1);
         void addButton(const char* label, uint8_t y);
         void addSelectedButton(const char* label, uint8_t y);

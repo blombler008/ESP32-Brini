@@ -13,7 +13,7 @@ TFT::TFT(uint8_t cs, uint8_t dc, uint8_t led, uint8_t rst) {
     u8g2_for_adafruit_gfx.begin(*tft);
 }
   
-void TFT::initialise(SPIClass *spiClass){ 
+void TFT::begin(SPIClass *spiClass){ 
 	pinMode(ledPin, OUTPUT);
     displayOFF();  
     u8g2_for_adafruit_gfx.setFontMode(1);
@@ -60,12 +60,15 @@ DisplaySize TFT::getSize() {
     return displaySize;
 }
 
+void TFT::setFont(const uint8_t * font) {
+    u8g2_for_adafruit_gfx.setFont(font);
+}
+
 void TFT::clear(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
     tft->fillRect(x0, y0, x1-x0, y1-y0, Display_Color_Black);
 }
 
-void TFT::addButton(const char *label, uint8_t y)
-{
+void TFT::addButton(const char *label, uint8_t y) {
     uint8_t x = 8;
     const char* x2 = "";
     

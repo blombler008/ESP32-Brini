@@ -1,16 +1,18 @@
 #include "MFRC.hpp"
-
+void card_read_loop(void* o);
+Ticker tkCardRead = Ticker();
 MFRC::MFRC(uint8_t cs, uint8_t rst, uint32_t timeout) { 
 	MFRC::rst = rst;
 	MFRC::cs = cs;
 	MFRC::timeout = timeout;
+	timeout = true;
+	cardRead = false; 
 }
   
-void MFRC::begin()
-{
+void MFRC::begin() {
     mfrc522.PCD_Init(cs, rst);
-	mfrc522.PCD_AntennaOn(); 
-	
+	mfrc522.PCD_AntennaOn();
+	card_read_loop0();
 }
 
 void MFRC::PCD_DumpVersionToSerial() {
@@ -40,16 +42,14 @@ String MFRC::PCD_UIDToString(MFRC522::Uid uid) {
 
 bool MFRC::hasReadCard() {
 	
-	if(isReadTimeout()) 
+	if(isReadTimeout()) {
 		return false;
+	}
 
-	if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
-		mfrc522.PCD_StopCrypto1();
-		readTimeout = true; 
-		timeoutEnd = esp_timer_get_time() + timeout*1000;
-		uid = mfrc522.uid;
+	if(cardRead) {
+		cardRead=false;
 		return true;
-	} 
+	}
 
 	return false;
 }
@@ -64,4 +64,20 @@ bool MFRC::isReadTimeout() {
 
 MFRC522::Uid MFRC::getUID() {
     return uid;
+}
+
+void MFRC::card_read_loop0() { 
+	int tout = 500;
+	if (mfrc522.PICC_IsNewCardPresent() && mfrc522.PICC_ReadCardSerial()) {
+		mfrc522.PCD_StopCrypto1(); 
+		uid = mfrc522.uid;
+		tout = timeout;
+		timeoutEnd = esp_timer_get_time() + 1000*timeout;
+		cardRead = true;
+	}
+	tkCardRead.once_ms(tout, card_read_loop, (void*)this);
+}
+
+void card_read_loop(void* o) {
+	((MFRC*)o)->card_read_loop0();
 }

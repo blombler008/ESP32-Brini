@@ -31,6 +31,8 @@
 #define WIFI_SSID       "Wickinger"
 #define WIFI_HOSTNAME   "ESP32S2.local"
 #define WIFI_PASSWORD   "EJYBmZ3pRdkHu614B8DC" // secret "DON'T TELL ANYONE"
+#define WIFI_SERVER_PORT 8080
+#define WIFI_UDP_PORT 8888
 
 // serial Setup
 #define SERIAL_BAUD     115200

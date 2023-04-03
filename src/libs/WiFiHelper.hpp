@@ -25,26 +25,27 @@ typedef enum {
 typedef struct {
     uint8_t msgid;
     char data[30];
-} CMDMessage;
+} WiFiCommand;
 
 void wifi_loop0(void* o);
+
 class WiFiHelper {
-private: 
-    const char* wifi_ssid;
-    const char* wifi_password;
-    const char* wifi_hostname;
-    uint16_t udp_port;
-    uint16_t server_port;
-public:
-    QueueHandle_t queue;
-    WiFiHelperStates status = NONE;
-    WiFiUDP udp;
-    WiFiServer server;
-    TaskHandle_t wifi_helper; 
-    WiFiHelper(); 
-    void begin(WiFiHelperConfig_t* wifiConfig);
-    WiFiHelperStates getWifiStatus() {return status;};
-    void sendData(CMDMessage* msg);
+    private: 
+        const char* wifi_ssid;
+        const char* wifi_password;
+        const char* wifi_hostname;
+        uint16_t udp_port;
+        uint16_t server_port;
+    public:
+        QueueHandle_t queue;
+        WiFiHelperStates status = NONE;
+        WiFiUDP udp;
+        WiFiServer server;
+        TaskHandle_t wifi_helper; 
+        WiFiHelper(); 
+        void begin(WiFiHelperConfig_t* wifiConfig);
+        WiFiHelperStates getWifiStatus() {return status;};
+        void sendData(WiFiCommand* msg);
 };
 
 

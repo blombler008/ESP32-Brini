@@ -19,7 +19,7 @@ void IRAM_ATTR isr_rot(void* o);
 class Encoder {
     public: 
         Encoder(uint8_t A, uint8_t B, uint8_t sw) { Encoder::A = A; Encoder::B = B; Encoder::sw = sw; };
-        void initialize();
+        void begin();
         void setCallback(callback data, void* type);
         void loop();
         uint8_t getB();

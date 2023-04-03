@@ -1,5 +1,6 @@
 #include "Menu.hpp"
-   
+void resetMenuTitle(Menu *menu);
+
 Menu::Menu(TFT* display, Encoder* encoder, const char* title) {
     Menu::title = title;
     Menu::encoder = encoder;
@@ -25,7 +26,7 @@ void turn(encoder_actions action, void* o) {
     menu->update();
 }
 
-void Menu::initialize() {
+void Menu::begin() {
     display->drawHorizontalLine(lineheight, gap);  
     display->printTextCentered(title, lineheight-gap/2);   
     DisplaySize size = display->getSize();
@@ -82,9 +83,7 @@ void Menu::update() {
         if(item->id == -1) continue;
         newItemList[i] = item;
     }  
-
-    DisplaySize size = display->getSize();
-    //display->clear(gap, lineheight+gap/2, size.width-gap*2, size.height-gap); 
+ 
         
     for(int i=0; i<5; i++) {   
         if(newItemList[i] == nullptr) continue;
@@ -100,4 +99,41 @@ void Menu::update() {
 int Menu::getSelectedItem() {
     return currentSelected;
 }
-           
+
+int Menu::getGap() {
+    return gap;
+}
+
+int Menu::getLineHeight() {
+    return lineheight;
+}
+
+const char* Menu::getTitle() {
+    return title;
+}
+
+const uint8_t * Menu::getTitleFont() {
+    return fontTitle;
+}
+
+const uint8_t * Menu::getButtonFont() {
+    return fontButton;
+}
+
+void Menu::setTitle(const char *title) {
+    DisplaySize size = display->getSize();
+    display->clear(1,1, size.width, lineheight-1);
+    display->setFont(fontTitle);
+    display->printTextCentered(title, lineheight-gap/2); 
+    
+    tkTitle.once(10, resetMenuTitle, this);
+}
+
+void resetMenuTitle(Menu *menu) {
+    TFT* display = menu->display;
+    int lineheight = menu->getLineHeight(), gap = menu->getGap();
+    DisplaySize size = display->getSize();
+    display->clear(1,1, size.width, lineheight-1);
+    display->setFont(menu->getTitleFont());
+    display->printTextCentered(menu->getTitle(), lineheight-gap/2);
+}
