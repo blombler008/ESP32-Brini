@@ -19,7 +19,7 @@ void WiFiHelper::begin(WiFiHelperConfig_t* wifiConfig) {
     server.setNoDelay(true);
     server.setTimeout(20);
     udp.begin(udp_port);
-
+    
     xTaskCreatePinnedToCore(wifi_loop0, "wifi_loop", 10000, this, 1, &wifi_helper, 0);  
 }
 
@@ -29,6 +29,10 @@ void WiFiHelper::sendData(const char* data) {
 
 void WiFiHelper::setWiFISetupFunction(void (*callback)(WiFiClient* client)) {
     WiFiHelper::WiFISetupFunction = callback;
+}
+
+void WiFiHelper::setRecieveCommandFunction(void (*callback)(const char* cmd)) {
+    WiFiHelper::commandRecieved = callback;
 }
 
 WiFiHelper::WiFiHelper() {
@@ -52,17 +56,12 @@ void runClientSetup(WiFiClient* client, WiFiHelper* helper) {
 void runClientLoop(WiFiClient* client, WiFiHelper* helper) {
     while(client->connected()) {   
         if (client->available()) { 
-            String data = client->readString();
+            String data = client->readStringUntil('\n');
             String newData = data.substring(0, data.indexOf("\n"));
             Serial.println("[TCP] Received: " + newData); 
-            if(newData.startsWith("but")) { 
-                newData = newData.substring(4, newData.length());
-                if(newData.startsWith("added")) { continue; }
-                Serial.println("[TCP] Button: " + newData); 
-                client->println("uid get"); 
-            }
+            helper->commandRecieved(newData.c_str());
         }
-             
+        
         const char* data; 
         if(xQueueReceive(helper->queue, (void*)(&data), 0)) {
             char send[30];

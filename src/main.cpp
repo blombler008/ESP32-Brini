@@ -10,6 +10,10 @@ Menu menu(&display, &encoder, TITLE);
 SPIClass vspi;
 // Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
 
+bool requireUid = false;
+int lastButtonId = -1;
+const char* lastScannedUid;
+
 const char* strings[] = {
     "Apfel Saft",
     "Orangen Saft",
@@ -21,20 +25,69 @@ const char* strings[] = {
     "Apfel mit schuss"
 };
 
+int ids[arrlen(strings)];
+
+void CocktailUsed(int cocktail, const char* uid) {
+    if(String(uid).isEmpty() && requireUid) return;
+
+    Serial.printf("Cocktail %s wurde benutzt\n", strings[cocktail]);
+
+    menu.setTitle("");
+    lastButtonId = -1;
+    lastScannedUid = "";
+}
+
 void menuItemSelected(MenuItem_t* item) {
-    if(wifi.getWifiStatus()==TCPCONNECTED) { 
+    if(wifi.getWifiStatus()==TCPCONNECTED && requireUid) { 
         wifi.sendData("uid clear");
     }
+    CocktailUsed(item->id, lastScannedUid);
 }
 
 void setupWiFI(WiFiClient *client) { 
     client->println("but clear"); 
+    String requireUidString = String("uid req ");
+    requireUidString.concat((requireUid ? "true" : "false"));
+    client->println(requireUidString.c_str());
     char buff[30];
-    for (int i = 0; i < sizeof(strings)/sizeof(char*); i++) {
+    for (int i = 0; i < arrlen(strings) ; i++) {
         sprintf(buff, "add %i %s", i, strings[i]);
         client->println(buff);
     }   
     client->println("uid clear"); 
+}
+
+void onCommandRecievd(const char* cmd) {
+    String command = String(cmd);
+    if(command.startsWith("but")) { 
+        command = command.substring(4);
+        if(command.startsWith("added")) { 
+            String viewIdString = command.substring(6, command.indexOf(" ", 6));
+            String buttonIdString = command.substring(7+viewIdString.length());
+             
+            int view = viewIdString.toInt();
+            int button = buttonIdString.toInt();
+            ids[button] = view;
+            return;    
+        }
+        if(command.startsWith("del")) { return; }
+        int viewId = command.toInt();
+        int button = 0;
+        for (int i = 0; i < arrlen(strings); i++) {
+            if(ids[i] == viewId) {
+                button = i;
+                break;
+            }
+        }
+        if(requireUid) {
+            lastButtonId = button;
+            wifi.sendData("uid get");
+        }
+    }
+    if(command.startsWith("uid ")) {
+        command = command.substring(4);
+        CocktailUsed(lastButtonId, command.c_str());
+    }
 }
 
 void setup() { 
@@ -63,7 +116,7 @@ void setup() {
     
     menu.begin(); 
     menu.setCallback(menuItemSelected);
-    for (int i = 0; i < sizeof(strings)/sizeof(char*); i++) {
+    for (int i = 0; i < arrlen(strings) ; i++) {
         menu.addItem(i, strings[i]);
     }  
     menu.update();
@@ -82,17 +135,18 @@ void setup() {
 
     wifi.begin(&wifiConfig);
     wifi.setWiFISetupFunction(setupWiFI);
+    wifi.setRecieveCommandFunction(onCommandRecievd);
 }
  
 void loop() {
     SR.out(wifi.getWifiStatus());
     encoder.loop();
 
-    if(mfrc.hasReadCard()) {
+    if(mfrc.hasReadCard() && requireUid) {
         MFRC522::Uid uid = mfrc.getUID();
         String uidBuff = mfrc.PCD_UIDToString(uid); 
         menu.setTitle(uidBuff.c_str());
-            
+        lastScannedUid = uidBuff.c_str();
         if(wifi.getWifiStatus() != TCPCONNECTED) { return; } 
    
         wifi.sendData(("uid set " + uidBuff).c_str());

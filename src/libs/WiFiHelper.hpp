@@ -39,9 +39,11 @@ class WiFiHelper {
         TaskHandle_t wifi_helper; 
         WiFiHelper(); 
         void (*WiFISetupFunction)(WiFiClient* client);
+        void (*commandRecieved)(const char* cmd);
         void begin(WiFiHelperConfig_t* wifiConfig);
         WiFiHelperStates getWifiStatus() {return status;};
         void sendData(const char* msg);
+        void setRecieveCommandFunction(void (*)(const char* cmd));
         void setWiFISetupFunction(void (*)(WiFiClient* client));
 };
 

@@ -125,6 +125,12 @@ const uint8_t * Menu::getButtonFont() {
 }
 
 void Menu::setTitle(const char *title) {
+
+    if(String(title).isEmpty()) {
+        resetMenuTitle(this);
+        return;
+    }
+
     DisplaySize size = display->getSize();
     display->clear(1,1, size.width, lineheight-1);
     display->setFont(fontTitle);

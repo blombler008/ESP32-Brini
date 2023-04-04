@@ -73,6 +73,6 @@
 #define TITLEHEIGHT     16
 #define TITLE           "Cocktail-Mixer"
 
-
+#define arrlen(x) sizeof(x)/4
 
 #endif
