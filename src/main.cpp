@@ -21,6 +21,22 @@ const char* strings[] = {
     "Apfel mit schuss"
 };
 
+void menuItemSelected(MenuItem_t* item) {
+    if(wifi.getWifiStatus()==TCPCONNECTED) { 
+        wifi.sendData("uid clear");
+    }
+}
+
+void setupWiFI(WiFiClient *client) { 
+    client->println("but clear"); 
+    char buff[30];
+    for (int i = 0; i < sizeof(strings)/sizeof(char*); i++) {
+        sprintf(buff, "add %i %s", i, strings[i]);
+        client->println(buff);
+    }   
+    client->println("uid clear"); 
+}
+
 void setup() { 
     esp_phy_erase_cal_data_in_nvs();
     
@@ -46,6 +62,7 @@ void setup() {
     display.begin(&SPI);
     
     menu.begin(); 
+    menu.setCallback(menuItemSelected);
     for (int i = 0; i < sizeof(strings)/sizeof(char*); i++) {
         menu.addItem(i, strings[i]);
     }  
@@ -64,25 +81,22 @@ void setup() {
     wifiConfig.ssid = WIFI_SSID; 
 
     wifi.begin(&wifiConfig);
+    wifi.setWiFISetupFunction(setupWiFI);
 }
-
-uint8_t data = 0;
-
+ 
 void loop() {
     SR.out(wifi.getWifiStatus());
     encoder.loop();
-    if(!mfrc.hasReadCard()) { return; }
-    
-    MFRC522::Uid uid = mfrc.getUID();
-    String uidBuff = mfrc.PCD_UIDToString(uid); 
-    menu.setTitle(uidBuff.c_str());
-        
-    if(wifi.getWifiStatus() != TCPCONNECTED) { return; } 
 
-    WiFiCommand cmd = WiFiCommand();  
-    char buff[30]; 
-    sprintf(buff, "uid set %s\n", uidBuff);
+    if(mfrc.hasReadCard()) {
+        MFRC522::Uid uid = mfrc.getUID();
+        String uidBuff = mfrc.PCD_UIDToString(uid); 
+        menu.setTitle(uidBuff.c_str());
+            
+        if(wifi.getWifiStatus() != TCPCONNECTED) { return; } 
+   
+        wifi.sendData(("uid set " + uidBuff).c_str());
+    }
     
-    memcpy(cmd.data, buff, 30);
-    wifi.sendData(&cmd);
+
 }

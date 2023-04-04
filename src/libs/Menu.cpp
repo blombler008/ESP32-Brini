@@ -33,6 +33,10 @@ void Menu::begin() {
     encoder->setCallback(turn, this);
 }
 
+
+void Menu::setCallback(void (*callback)(MenuItem_t* item)) {
+    Menu::callback = callback;
+}
 void Menu::scrollDown() {
     currentSelected++; 
 }
@@ -43,7 +47,7 @@ void Menu::scrollUp() {
 
 void Menu::select() { 
     MenuItem_t* item = displayItems[2];
-    
+    callback(item);
 }
 
 void Menu::addItem(int id, const char* label) {  

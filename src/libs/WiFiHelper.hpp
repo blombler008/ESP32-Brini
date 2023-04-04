@@ -21,12 +21,7 @@ typedef enum {
     UDPCONNECTED = 3,
     TCPCONNECTED = 7
 } WiFiHelperStates;
-
-typedef struct {
-    uint8_t msgid;
-    char data[30];
-} WiFiCommand;
-
+ 
 void wifi_loop0(void* o);
 
 class WiFiHelper {
@@ -43,9 +38,11 @@ class WiFiHelper {
         WiFiServer server;
         TaskHandle_t wifi_helper; 
         WiFiHelper(); 
+        void (*WiFISetupFunction)(WiFiClient* client);
         void begin(WiFiHelperConfig_t* wifiConfig);
         WiFiHelperStates getWifiStatus() {return status;};
-        void sendData(WiFiCommand* msg);
+        void sendData(const char* msg);
+        void setWiFISetupFunction(void (*)(WiFiClient* client));
 };
 
 

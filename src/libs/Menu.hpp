@@ -5,17 +5,17 @@
 #include "Encoder.hpp"
 #include <stdio.h>
 #include <Ticker.h>
+
 typedef struct {  
     int id = -1;
     String itemName;
 } MenuItem_t;
-
-// TODO: Callback fuers selected item;
-
+ 
 class Menu {
     public: 
         Menu(TFT* display, Encoder* encoder, const char* title);
         void begin();
+        void setCallback(void (*callback)(MenuItem_t* item));
         void addItem(int id, const char* label);
         void update();
         void redraw();
@@ -30,11 +30,11 @@ class Menu {
         const uint8_t * getButtonFont();
         int getGap();
         void setTitle(const char* title);
-        
         TFT* display;
         Encoder* encoder;
 
     private:
+        void (*callback)(MenuItem_t* item);
         Ticker tkTitle;
         const uint8_t * fontTitle = u8g2_font_8x13B_tr;
         const uint8_t * fontButton = u8g2_font_6x12_tr;

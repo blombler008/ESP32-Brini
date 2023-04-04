@@ -23,14 +23,55 @@ void WiFiHelper::begin(WiFiHelperConfig_t* wifiConfig) {
     xTaskCreatePinnedToCore(wifi_loop0, "wifi_loop", 10000, this, 1, &wifi_helper, 0);  
 }
 
-void WiFiHelper::sendData(WiFiCommand* msg) {
-    xQueueSendToBack(queue, (void*)(msg), 0);
+void WiFiHelper::sendData(const char* data) {
+    xQueueSendToBack(queue, (void*)(&data), 0);
+}
+
+void WiFiHelper::setWiFISetupFunction(void (*callback)(WiFiClient* client)) {
+    WiFiHelper::WiFISetupFunction = callback;
 }
 
 WiFiHelper::WiFiHelper() {
-    queue = xQueueCreate(5, sizeof(WiFiCommand));
+    queue = xQueueCreate(5, sizeof(char*));
 }
 
+void runClientSetup(WiFiClient* client, WiFiHelper* helper) {
+    while(client->connected()) {   
+        if(client->available()) { 
+            String data = client->readString();
+            String newData = data.substring(0, data.indexOf("\n"));
+            Serial.println("[TCP] Received from Tablet: " + newData); 
+            client->println("Hello Tablet!");
+
+            helper->WiFISetupFunction(client);
+            break;
+        }
+    }
+}
+
+void runClientLoop(WiFiClient* client, WiFiHelper* helper) {
+    while(client->connected()) {   
+        if (client->available()) { 
+            String data = client->readString();
+            String newData = data.substring(0, data.indexOf("\n"));
+            Serial.println("[TCP] Received: " + newData); 
+            if(newData.startsWith("but")) { 
+                newData = newData.substring(4, newData.length());
+                if(newData.startsWith("added")) { continue; }
+                Serial.println("[TCP] Button: " + newData); 
+                client->println("uid get"); 
+            }
+        }
+             
+        const char* data; 
+        if(xQueueReceive(helper->queue, (void*)(&data), 0)) {
+            char send[30];
+            memcpy(send, data, sizeof(send));
+            Serial.printf("Sending: %s\n", send);
+            client->println(send); 
+        }
+    } 
+}
 void wifi_loop0(void* o) {
     WiFiHelper* helper = (WiFiHelper*)o;
     WiFiUDP udp = helper->udp;
@@ -60,43 +101,10 @@ void wifi_loop0(void* o) {
             helper->status = TCPCONNECTED;
             Serial.println("[TCP] Connecting");
             WiFiClient client = server.available(); 
-            while(client.connected()) {   
-                if(client.available()) { 
-                    String data = client.readString();
-                    String newData = data.substring(0, data.indexOf("\n"));
-                    Serial.println("[TCP] Received from Tablet: " + newData); 
-                            
-                    client.printf("Hello Tablet!\n"); 
-                    client.flush();   
-                    client.printf("add TestButton 1\n"); 
-                    client.flush(); 
-                    client.printf("uid clear\n"); 
-                    client.flush(); 
-                    break;
-                }
-            }
+            runClientSetup(&client, helper);
             
-            while(client.connected()) {   
-                if (client.available()) { 
-                    String data = client.readString();
-                    String newData = data.substring(0, data.indexOf("\n"));
-                    Serial.println("[TCP] Received: " + newData); 
-                    if(newData.startsWith("but")) { 
-                        newData = newData.substring(4, newData.length());
-                        if(newData.startsWith("added")) { continue; }
-                        Serial.println("[TCP] Button: " + newData); 
-                        client.printf("uid get\n");
-                        client.flush();  
-                    }
-                }
-                  
-                WiFiCommand data;
-                if(xQueueReceive(helper->queue, (void*)(&data), 0)) {
-                    Serial.printf("Sending: %s\n", data.data);
-                    client.write(data.data);
-                    client.flush(); 
-                }
-            } 
+            runClientLoop(&client, helper);
+            
             server.stopAll();
             helper->status = NONE;
         }  
