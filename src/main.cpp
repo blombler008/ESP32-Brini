@@ -82,7 +82,9 @@ void onCommandRecievd(const char* cmd) {
         if(requireUid) {
             lastButtonId = button;
             wifi.sendData("uid get");
+            return;
         }
+        CocktailUsed(button, "");
     }
     if(command.startsWith("uid ")) {
         command = command.substring(4);

@@ -52,6 +52,13 @@
 #define ENC_B           2 
 #define ENC_SW          3
 
+// SSR Relai
+#define SSR_D1          10
+#define SSR_D2          11
+#define SSR_D3          12
+#define SSR_D4          13
+
+
 // SPI pins
 #define SPI_SCK         36  // CLOCK
 #define SPI_MISO        34  // DATA IN
