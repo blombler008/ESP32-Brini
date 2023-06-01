@@ -10,6 +10,7 @@ Menu menu(&display, &encoder, TITLE);
 SPIClass vspi;
 // Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
 
+
 bool requireUid = false;
 int lastButtonId = -1;
 const char* lastScannedUid;
