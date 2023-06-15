@@ -1,4 +1,5 @@
 #include <config.hpp>   
+#include "Cocktail.hpp"
 
 WiFiHelper wifi;
 MFRC mfrc(RFID_CS, RFID_RST);
@@ -15,27 +16,65 @@ bool requireUid = false;
 int lastButtonId = -1;
 const char* lastScannedUid;
 
-const char* strings[] = {
-    "Apfel Saft",
-    "Orangen Saft",
-    "BaKi",
-    "Apfel Kirsch",
-    "Vodka",
-    "Vodka E+",
-    "BaKi mit Schuss",
-    "Apfel mit schuss"
-};
+Cocktail *cocktails[8];
 
-int ids[arrlen(strings)];
+void SetupCocktail() {
+    CocktailPump currentPump1;
+    currentPump1.pump = 1;
+    CocktailPump currentPump2;
+    currentPump2.pump = 2;
+    CocktailPump currentPump3;
+    currentPump3.pump = 3;
+    CocktailPump currentPump4;
+    currentPump4.pump = 4;
+    CocktailPump pumps[] = {currentPump1, currentPump2, currentPump3, currentPump4};
+
+    currentPump1.time = 0;
+    currentPump2.time = 2500;
+    currentPump3.time = 0;
+    currentPump4.time = 0;
+    (*cocktails[0]) = Cocktail("Apfel Saft", pumps); 
+    currentPump1.time = 0;
+    currentPump2.time = 0;
+    currentPump3.time = 1250;
+    currentPump4.time = 1250;
+    (*cocktails[1]) = Cocktail("BaKi", pumps);
+    currentPump1.time = 0;
+    currentPump2.time = 1250;
+    currentPump3.time = 1250;
+    currentPump4.time = 0;
+    (*cocktails[2]) = Cocktail("Apfel Kirsch", pumps);
+    currentPump1.time = 2500;
+    currentPump2.time = 0;
+    currentPump3.time = 0;
+    currentPump4.time = 0;
+    (*cocktails[3]) = Cocktail("Vodka", pumps); 
+    currentPump1.time = 250;
+    currentPump2.time = 0;
+    currentPump3.time = 1125;
+    currentPump4.time = 1125;
+    (*cocktails[4]) = Cocktail("BaKi mit Schuss", pumps);
+    currentPump1.time = 250;
+    currentPump2.time = 2250;
+    currentPump3.time = 0;
+    currentPump4.time = 0;
+    (*cocktails[5]) = Cocktail("Apfel mit schuss", pumps);
+ 
+}
+ 
+int ids[20];
 
 void CocktailUsed(int cocktail, const char* uid) {
     if(String(uid).isEmpty() && requireUid) return;
 
-    Serial.printf("Cocktail %s wurde benutzt\n", strings[cocktail]);
+    Serial.printf("Cocktail %s wurde benutzt\n", cocktails[cocktail]->getName());
 
     menu.setTitle("");
     lastButtonId = -1;
     lastScannedUid = "";
+    
+
+
 }
 
 void menuItemSelected(MenuItem_t* item) {
@@ -51,8 +90,8 @@ void setupWiFI(WiFiClient *client) {
     requireUidString.concat((requireUid ? "true" : "false"));
     client->println(requireUidString.c_str());
     char buff[30];
-    for (int i = 0; i < arrlen(strings) ; i++) {
-        sprintf(buff, "add %i %s", i, strings[i]);
+    for (int i = 0; i < arrlen(cocktails) ; i++) {
+        sprintf(buff, "add %i %s", i, cocktails[i]->getName());
         client->println(buff);
     }   
     client->println("uid clear"); 
@@ -74,7 +113,7 @@ void onCommandRecievd(const char* cmd) {
         if(command.startsWith("del")) { return; }
         int viewId = command.toInt();
         int button = 0;
-        for (int i = 0; i < arrlen(strings); i++) {
+        for (int i = 0; i < arrlen(cocktails); i++) {
             if(ids[i] == viewId) {
                 button = i;
                 break;
@@ -119,8 +158,8 @@ void setup() {
     
     menu.begin(); 
     menu.setCallback(menuItemSelected);
-    for (int i = 0; i < arrlen(strings) ; i++) {
-        menu.addItem(i, strings[i]);
+    for (int i = 0; i < arrlen(cocktails) ; i++) {
+        menu.addItem(i, cocktails[i]->getName().c_str());
     }  
     menu.update();
     
@@ -139,6 +178,8 @@ void setup() {
     wifi.begin(&wifiConfig);
     wifi.setWiFISetupFunction(setupWiFI);
     wifi.setRecieveCommandFunction(onCommandRecievd);
+
+    SetupCocktail();
 }
  
 void loop() {
