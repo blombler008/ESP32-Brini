@@ -1,3 +1,4 @@
+
 #include <Arduino.h>  
 #include <pins_arduino.h>
 #include <libs/PrintHelper.hpp>
@@ -41,11 +42,11 @@
 #define FORMAT_LITTLEFS_IF_FAILED false
 
 // Register Serial Pins
-#define SR_CLK_PIN      4   // shift clock
-#define SR_DATA_PIN     5   // data
-#define SR_OE_PIN       6   // output enable
-#define SR_RCK_PIN      7   // storage clock
-#define SR_CLR_PIN      15  // storage & shift register clear
+#define SR_CLK_PIN      6   // shift clock
+#define SR_DATA_PIN     4   // data
+#define SR_OE_PIN       5   // output enable
+#define SR_RCK_PIN      15   // storage clock
+#define SR_CLR_PIN      7  // storage & shift register clear
 
 // ENCODER SWITCHES
 #define ENC_A           1
@@ -61,16 +62,16 @@
 
 // SPI pins
 #define SPI_SCK         36  // CLOCK
-#define SPI_MISO        34  // DATA IN
-#define SPI_MOSI        35  // DATA OUT
+#define SPI_MISO        38  // DATA IN
+#define SPI_MOSI        37  // DATA OUT
 
-#define RFID_CS         37  // Chip SELECT
-#define RFID_RST        33  // RESET
+#define RFID_CS         35  // Chip SELECT
+#define RFID_RST        39  // RESET
 
-#define TFT_CS          21
-#define TFT_DC          20  
-#define TFT_RST         19
-#define TFT_LED_PIN     38
+#define TFT_CS          19
+#define TFT_DC          21  
+#define TFT_RST         20
+#define TFT_LED_PIN     34
 
 // Menu Information
 
