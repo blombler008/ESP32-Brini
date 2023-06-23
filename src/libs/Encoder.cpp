@@ -26,7 +26,7 @@ void Encoder::begin() {
     gpio_config(&confsw);
     gpio_intr_enable(gpio_num_t(A));
     gpio_intr_enable(gpio_num_t(sw));
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+    gpio_install_isr_service(ESP_INTR_FLAG_IRAM); 
     gpio_isr_handler_add(gpio_num_t(sw), isr_sw, this);  
     gpio_isr_handler_add(gpio_num_t(A), isr_rot, this); 
 }

@@ -6,6 +6,7 @@
 #include <WiFiClient.h>
 #include <WebServer.h>
 #include <freertos/queue.h> 
+#include <esp_wifi.h>
 
 typedef struct {
     const char* ssid;

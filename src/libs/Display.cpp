@@ -22,7 +22,7 @@ void TFT::begin(SPIClass *spiClass){
     u8g2_for_adafruit_gfx.setFontDirection((displayRot+1)%4);
     u8g2_for_adafruit_gfx.setFont(u8g2_font_8x13B_tr);
 
-    tft->initR(INITR_BLACKTAB);
+    tft->initR(INITR_GREENTAB);
     tft->setRotation(displayRot); 
     tft->fillScreen(displayBackroundColor); 
     tft->enableDisplay(true);  

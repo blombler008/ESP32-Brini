@@ -51,7 +51,7 @@
 // ENCODER SWITCHES
 #define ENC_A           1
 #define ENC_B           2 
-#define ENC_SW          3
+#define ENC_SW          42
 
 // SSR Relai
 #define SSR_D1          10
@@ -74,7 +74,7 @@
 #define TFT_LED_PIN     34
 
 // Menu Information
-
+ 
 #define GAP             8
 #define LINEHIGHT       20
 #define TEXTHEIGHT      4

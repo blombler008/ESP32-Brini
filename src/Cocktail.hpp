@@ -12,10 +12,10 @@ typedef struct {
 class Cocktail {
     private: 
         CocktailPump pumpConfig[4];
-        String name;
+        char name[18] = {0};
     public:
-        Cocktail(String name, CocktailPump pumps[4]); 
-        String getName();
+        Cocktail(const char* name, CocktailPump pumps[4]); 
+        const char* getName();
 };
 
 #endif

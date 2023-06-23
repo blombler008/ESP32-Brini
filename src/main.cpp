@@ -16,7 +16,9 @@ bool requireUid = false;
 int lastButtonId = -1;
 const char* lastScannedUid;
 
-Cocktail *cocktails[8];
+#define cocktails_size 8
+
+Cocktail *cocktails[cocktails_size];
 
 void SetupCocktail() {
     CocktailPump currentPump1;
@@ -29,40 +31,41 @@ void SetupCocktail() {
     currentPump4.pump = 4;
     CocktailPump pumps[] = {currentPump1, currentPump2, currentPump3, currentPump4};
 
+
     currentPump1.time = 0;
     currentPump2.time = 2500;
     currentPump3.time = 0;
     currentPump4.time = 0;
-    (*cocktails[0]) = Cocktail("Apfel Saft", pumps); 
+    cocktails[0] = new Cocktail("Apfel Saft", pumps); 
     currentPump1.time = 0;
     currentPump2.time = 0;
     currentPump3.time = 1250;
     currentPump4.time = 1250;
-    (*cocktails[1]) = Cocktail("BaKi", pumps);
+    cocktails[1] = new Cocktail("BaKi", pumps);
     currentPump1.time = 0;
     currentPump2.time = 1250;
     currentPump3.time = 1250;
     currentPump4.time = 0;
-    (*cocktails[2]) = Cocktail("Apfel Kirsch", pumps);
+    cocktails[2] = new Cocktail("Apfel Kirsch", pumps);
     currentPump1.time = 2500;
     currentPump2.time = 0;
     currentPump3.time = 0;
     currentPump4.time = 0;
-    (*cocktails[3]) = Cocktail("Vodka", pumps); 
+    cocktails[3] = new Cocktail("Vodka", pumps); 
     currentPump1.time = 250;
     currentPump2.time = 0;
     currentPump3.time = 1125;
     currentPump4.time = 1125;
-    (*cocktails[4]) = Cocktail("BaKi mit Schuss", pumps);
+    cocktails[4] = new Cocktail("BaKi mit Schuss", pumps);
     currentPump1.time = 250;
     currentPump2.time = 2250;
     currentPump3.time = 0;
     currentPump4.time = 0;
-    (*cocktails[5]) = Cocktail("Apfel mit schuss", pumps);
+    cocktails[5] = new Cocktail("Apfel mit schuss", pumps);
  
 }
  
-int ids[20];
+int ids[cocktails_size];
 
 void CocktailUsed(int cocktail, const char* uid) {
     if(String(uid).isEmpty() && requireUid) return;
@@ -71,10 +74,7 @@ void CocktailUsed(int cocktail, const char* uid) {
 
     menu.setTitle("");
     lastButtonId = -1;
-    lastScannedUid = "";
-    
-
-
+    lastScannedUid = ""; 
 }
 
 void menuItemSelected(MenuItem_t* item) {
@@ -91,6 +91,7 @@ void setupWiFI(WiFiClient *client) {
     client->println(requireUidString.c_str());
     char buff[30];
     for (int i = 0; i < arrlen(cocktails) ; i++) {
+        if(cocktails[i] == 0) continue;
         sprintf(buff, "add %i %s", i, cocktails[i]->getName());
         client->println(buff);
     }   
@@ -114,6 +115,7 @@ void onCommandRecievd(const char* cmd) {
         int viewId = command.toInt();
         int button = 0;
         for (int i = 0; i < arrlen(cocktails); i++) {
+            if(cocktails[i] == 0) continue;
             if(ids[i] == viewId) {
                 button = i;
                 break;
@@ -133,13 +135,26 @@ void onCommandRecievd(const char* cmd) {
 }
 
 void setup() { 
-    esp_phy_erase_cal_data_in_nvs();
-    
+
     Serial.begin(SERIAL_BAUD);
     // pixel.begin();  
     
     // luaHandler.initialize();
     // luaHandler.start();
+
+    SetupCocktail();
+    
+    WiFiHelperConfig_t wifiConfig;
+    wifiConfig.hostname = WIFI_HOSTNAME;
+    wifiConfig.password = WIFI_PASSWORD;
+    wifiConfig.server_port = WIFI_SERVER_PORT;
+    wifiConfig.udp_port = WIFI_UDP_PORT ;
+    wifiConfig.ssid = WIFI_SSID; 
+
+    wifi.begin(&wifiConfig);
+    wifi.setWiFISetupFunction(setupWiFI);
+    wifi.setRecieveCommandFunction(onCommandRecievd);
+
 
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI); 
     SPI.setFrequency(10000000u);
@@ -159,7 +174,9 @@ void setup() {
     menu.begin(); 
     menu.setCallback(menuItemSelected);
     for (int i = 0; i < arrlen(cocktails) ; i++) {
-        menu.addItem(i, cocktails[i]->getName().c_str());
+        
+        if(cocktails[i] == 0) continue; 
+        menu.addItem(i, cocktails[i]->getName());
     }  
     menu.update();
     
@@ -168,18 +185,7 @@ void setup() {
     mfrc.PCD_DumpVersionToSerial(); 
 
 
-    WiFiHelperConfig_t wifiConfig;
-    wifiConfig.hostname = WIFI_HOSTNAME;
-    wifiConfig.password = WIFI_PASSWORD;
-    wifiConfig.server_port = WIFI_SERVER_PORT;
-    wifiConfig.udp_port = WIFI_UDP_PORT ;
-    wifiConfig.ssid = WIFI_SSID; 
-
-    wifi.begin(&wifiConfig);
-    wifi.setWiFISetupFunction(setupWiFI);
-    wifi.setRecieveCommandFunction(onCommandRecievd);
-
-    SetupCocktail();
+	Serial.println("Setup Finished");
 }
  
 void loop() {

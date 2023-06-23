@@ -1,4 +1,31 @@
 #include "WiFiHelper.hpp"
+void testScan(const char* ssid) {
+    Serial.println("Scanning");
+    const int16_t n = WiFi.scanNetworks();
+    if(n == WIFI_SCAN_FAILED) { 
+        Serial.println("scan failed");
+        return;
+    }
+    Serial.println("scan done");
+    if (n == 0) {
+        Serial.println("no networks found");
+    } else {
+        Serial.print(n);
+        Serial.println(" networks found");
+        for (int i = 0; i < n; ++i) {
+            // Print SSID and signal strength
+            Serial.print(i + 1);
+            Serial.print(": ");
+            Serial.print(WiFi.SSID(i));
+            Serial.print(" (");
+            Serial.print(WiFi.RSSI(i));
+            Serial.print(")");
+            Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN)?" ":"*");
+            delay(10);
+        }
+    }
+    Serial.println("");
+}
 
 void WiFiHelper::begin(WiFiHelperConfig_t* wifiConfig) {
     wifi_ssid = wifiConfig->ssid;
@@ -6,19 +33,32 @@ void WiFiHelper::begin(WiFiHelperConfig_t* wifiConfig) {
     wifi_hostname = wifiConfig->hostname;
     udp_port = wifiConfig->udp_port;
     server_port = wifiConfig->server_port; 
-    
-    WiFi.begin(wifi_ssid, wifi_password);
-    while (WiFi.status() != WL_CONNECTED) {
+    WiFi.mode(WIFI_MODE_APSTA);
+    WiFi.disconnect();
+    WiFi.begin(wifi_ssid, wifi_password); 
+    int polTimeout = 0;
+
+    Serial.print("Connecting to WiFi...");
+    while (WiFi.status() != WL_CONNECTED && polTimeout < 6) {
         delay(1000);
-        Serial.println("Connecting to WiFi...");
+        polTimeout++;
+        Serial.print("...");
     }
-    
+    Serial.println("");
+    if(polTimeout == 6) { 
+        testScan(wifi_ssid);
+        Serial.println("Trying SoftAP");
+        WiFi.softAP(wifi_ssid, wifi_password);
+
+    }
+
     server.begin(server_port);
-	Serial.println("Starting...");
+	Serial.println("Starting Server...");
     udp.setTimeout(20);
     server.setNoDelay(true);
     server.setTimeout(20);
     udp.begin(udp_port);
+	Serial.println("Server Started!");
     
     xTaskCreatePinnedToCore(wifi_loop0, "wifi_loop", 10000, this, 1, &wifi_helper, 0);  
 }
