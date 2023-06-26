@@ -112,6 +112,7 @@ void onCommandRecievd(const char* cmd) {
             return;    
         }
         if(command.startsWith("del")) { return; }
+        // but 5
         int viewId = command.toInt();
         int button = 0;
         for (int i = 0; i < arrlen(cocktails); i++) {

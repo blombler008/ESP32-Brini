@@ -45,13 +45,13 @@
 #define SR_CLK_PIN      6   // shift clock
 #define SR_DATA_PIN     4   // data
 #define SR_OE_PIN       5   // output enable
-#define SR_RCK_PIN      15   // storage clock
-#define SR_CLR_PIN      7  // storage & shift register clear
+#define SR_RCK_PIN      15  // storage clock
+#define SR_CLR_PIN      7   // storage & shift register clear
 
 // ENCODER SWITCHES
 #define ENC_A           1
 #define ENC_B           2 
-#define ENC_SW          42
+#define ENC_SW          42 /// FIX ME -> (3)
 
 // SSR Relai
 #define SSR_D1          10
@@ -68,10 +68,10 @@
 #define RFID_CS         35  // Chip SELECT
 #define RFID_RST        39  // RESET
 
-#define TFT_CS          19
-#define TFT_DC          21  
-#define TFT_RST         20
-#define TFT_LED_PIN     34
+#define TFT_CS          19 /// FIX ME -> (33?)
+#define TFT_DC          21 
+#define TFT_RST         20 /// FIX ME (remove?)
+#define TFT_LED_PIN     34 
 
 // Menu Information
  
