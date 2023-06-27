@@ -7,21 +7,27 @@ Menu::Menu(TFT* display, Encoder* encoder, const char* title) {
     Menu::display = display;
 }
 
-void turn(encoder_actions action, void* o) { 
+void turn(encoder_actions_t action, void* o) { 
     Menu* menu = ((Menu*) o); 
+     
+    printf("Action: ");
     switch (action) {
     case RIGHT:
+        printf("RIGHT");
         menu->scrollUp();
         menu->update();
         break; 
     case LEFT:
+        printf("LEFT");
         menu->scrollDown();
         menu->update();
         break; 
     case BUTTON:
+        printf("SELECT");
         menu->select();
         break;  
     }
+    printf("\n");
 }
 
 void Menu::begin() {

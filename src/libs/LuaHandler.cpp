@@ -27,7 +27,7 @@ void LuaHandler::initialize() {
 }
 
 void LuaHandler::start() {
-    xTaskCreatePinnedToCore([](void* o){ ((LuaHandler*)o)->lua_loop0(); }, "lua_loop", 10000, this, 1, &fs_lua, 1);  
+    xTaskCreatePinnedToCore([](void* o){ ((LuaHandler*)o)->lua_loop0(); }, "lua_loop", 10000, this, 1, &fs_lua, tskNO_AFFINITY);  
 }
  
 void LuaHandler::executeLoop() { 

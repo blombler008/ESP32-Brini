@@ -1,38 +1,47 @@
 #include "Encoder.hpp"
+
+const int flags = ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_LEVEL2;
+
+void setGPIOConfig(gpio_config_t *conf, uint8_t pin) { 
+    if(gpio_config(conf) != ESP_OK) 
+        printf("Failed to set GPIO config for pin %d\n", pin);
+}
+
+void setGPIOisr(gpio_num_t gpio_num, gpio_isr_t isr_handler, void *args) {
+    if(gpio_intr_enable(gpio_num) != ESP_OK) 
+        printf("Failed to enable GPIO intr for pin %d\n", gpio_num);
  
+    if(gpio_isr_handler_add(gpio_num, isr_handler, args) != ESP_OK) 
+        printf("Failed to set GPIO ISR Handler for pin %d\n", gpio_num);
+}
+
+gpio_config_t createConf(uint8_t pin, gpio_int_type_t intr) {
+    gpio_config_t result;
+
+    result.intr_type = intr;
+    result.mode = GPIO_MODE_INPUT;
+    result.pin_bit_mask = 1<<pin;
+    result.pull_down_en = GPIO_PULLDOWN_ENABLE;
+    result.pull_up_en = GPIO_PULLUP_DISABLE; 
+
+    return result;
+}
 
 void Encoder::begin() {
-    queue = xQueueCreate(50, sizeof(uint16_t));
+    queue = xQueueCreate(50, sizeof(uint16_t)); 
+    gpio_config_t confA = createConf(A, GPIO_INTR_NEGEDGE);
+    gpio_config_t confB= createConf(B, GPIO_INTR_DISABLE);
+    gpio_config_t confSW = createConf(SW, GPIO_INTR_NEGEDGE);
+ 
+    setGPIOConfig(&confA, A);
+    setGPIOConfig(&confB, B);
+    setGPIOConfig(&confSW, SW);
+     
+    if(gpio_install_isr_service(flags) != ESP_OK) 
+        printf("Failed to install gpio isr service\n");
 
-    gpio_config_t confA;
-    confA.intr_type = GPIO_INTR_NEGEDGE;
-    confA.mode = GPIO_MODE_INPUT;
-    confA.pin_bit_mask = 1<<A;
-    confA.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    confA.pull_up_en = GPIO_PULLUP_DISABLE; 
-
-    gpio_config_t confB;
-    confB.intr_type = GPIO_INTR_DISABLE;
-    confB.mode = GPIO_MODE_INPUT;
-    confB.pin_bit_mask = 1<<B;
-    confB.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    confB.pull_up_en = GPIO_PULLUP_DISABLE; 
-
-    gpio_config_t confsw;
-    confsw.intr_type = GPIO_INTR_NEGEDGE;
-    confsw.mode = GPIO_MODE_INPUT;
-    confsw.pin_bit_mask = 1<<sw;
-    confsw.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    confsw.pull_up_en = GPIO_PULLUP_DISABLE;    
-
-    gpio_config(&confA);
-    gpio_config(&confB);
-    gpio_config(&confsw);
-    gpio_intr_enable(gpio_num_t(A));
-    gpio_intr_enable(gpio_num_t(sw));
-    gpio_install_isr_service(ESP_INTR_FLAG_IRAM | ESP_INTR_FLAG_SHARED | ESP_INTR_FLAG_LEVEL2); 
-    gpio_isr_handler_add(gpio_num_t(A), isr_rot, this); 
-    gpio_isr_handler_add(gpio_num_t(sw), isr_sw, this);
+    setGPIOisr(gpio_num_t(SW), isr_sw, this); 
+    setGPIOisr(gpio_num_t(A), isr_rot, this); 
 }
 
 void Encoder::setCallback(callback c, void* ty) {
@@ -44,7 +53,7 @@ void Encoder::loop() {
     uint16_t data = 0;
     xQueueReceiveFromISR(queue, &data, 0); 
     if(data != 0) { 
-        (*cb)(encoder_actions(data), cls);  
+        (*cb)(encoder_actions_t(data), cls);  
     }  
 }
 
@@ -56,8 +65,8 @@ uint8_t Encoder::getA() {
     return A;
 }
  
-uint8_t Encoder::getSW() {
-    return sw;
+uint8_t Encoder::getSwitch() {
+    return SW;
 }
 
 void Encoder::enqueue(uint8_t cmd, uint8_t data) {
