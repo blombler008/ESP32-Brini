@@ -74,15 +74,13 @@ void Encoder::enqueue(uint8_t cmd, uint8_t data) {
     xQueueSendToBackFromISR(queue, &dataToSend, 0);
 }
 
-void IRAM_ATTR isr_sw(void* o) {
-    //                    0x0100
+void IRAM_ATTR isr_sw(void* o) { 
     ((Encoder*) o)->enqueue(1, 0);
 }
 
 void IRAM_ATTR isr_rot(void* o) {
     
     const int pin = ((Encoder*) o)->getB();
-    int level = gpio_get_level(gpio_num_t(pin)); 
-    //                    0x0202 oder 0x0201
+    int level = gpio_get_level(gpio_num_t(pin));  
     ((Encoder*) o)->enqueue(2, level);
 }
