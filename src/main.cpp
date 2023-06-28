@@ -14,7 +14,7 @@ SPIClass vspi;
 
 bool requireUid = true;
 int lastButtonId = -1;
-const char* lastScannedUid;
+char lastScannedUid[12];
 
 #define cocktails_size 8
 
@@ -68,14 +68,22 @@ void SetupCocktail() {
 int ids[cocktails_size];
 
 void CocktailUsed(int cocktail, const char* uid) {
-    if(String(uid).isEmpty() && requireUid) return;
+    String uidStr = String(uid);
+    if(uidStr.isEmpty() && requireUid) return;
     Cocktail cocktailUsed = *(cocktails[cocktail]);
+    
+    if(uidStr.isEmpty())
+        logprint("Cocktail %s wurde benutzt", cocktailUsed.getName());
+    else 
+        logprint("%s hat Cocktail %s wurde benutzt", uid, cocktailUsed.getName());
 
-    logprint("Cocktail %s wurde benutzt\n", cocktailUsed.getName());
-
-    menu.setTitle("");
+    menu.resetTitle();
     lastButtonId = -1;
-    lastScannedUid = ""; 
+    
+    for (size_t i = 0; i < 12; i++) {
+        lastScannedUid[i] = 0; 
+    }
+    
 }
 
 void menuItemSelected(MenuItem_t* item) {
@@ -136,6 +144,20 @@ void onCommandRecievd(const char* cmd) {
     }
 }
 
+void serialInputLoop(void* pv) {
+     
+    String command = Serial.readString();
+    if(!command.isEmpty()) {
+        if(command.startsWith("on")) {
+            logprint("Turning on %d", command.substring(3).toInt());
+        }
+        if(command.startsWith("off")) {
+            logprint("Turning off %d", command.substring(4).toInt());
+            
+        }
+    } 
+}
+
 void setup() { 
 
     Serial.begin(SERIAL_BAUD);
@@ -186,30 +208,21 @@ void setup() {
     vTaskDelay(4);
     mfrc.PCD_DumpVersionToSerial(); 
 
+    xTimerCreate("serialInputLoop", 100 / portTICK_PERIOD_MS, true, NULL, serialInputLoop);
 
 	logprint("Setup Finished");
 }
+
+
  
 void loop() {
     SR.out(wifi.getWifiStatus());
     encoder.loop();
-    // if(Serial.available()) {
-    //     String command = Serial.readStringUntil('\n');
-    //     if(!command.isEmpty()) {
-    //         if(command.startsWith("on")) {
-    //             logprint("Turning on %d", command.substring(3).toInt());
-    //         }
-    //         if(command.startsWith("off")) {
-    //             logprint("Turning off %d", command.substring(4).toInt());
-                
-    //         }
-    //     }
-    // }
     if(mfrc.hasReadCard() && requireUid) {
         MFRC522::Uid uid = mfrc.getUID();
         String uidBuff = mfrc.PCD_UIDToString(uid); 
         menu.setTitle(uidBuff.c_str());
-        lastScannedUid = uidBuff.c_str();
+        strcpy(lastScannedUid, uidBuff.c_str()); 
         if(wifi.getWifiStatus() != TCPCONNECTED) { return; } 
    
         wifi.sendData(("uid set " + uidBuff).c_str());

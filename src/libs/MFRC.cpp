@@ -22,7 +22,7 @@ void MFRC::PCD_DumpVersionToSerial() {
 	logprint("Scan PICC to see UID, SAK, type, and data blocks..."); 
 }
 
-void MFRC::PCD_UIDToSerial(MFRC522::Uid uid) { 
+void MFRC::PCD_UIDToSerial(MFRC522::Uid uid) {
 	printf("UID OF Device: ");  
 	for (int i = 0; i < uid.size; i++) {
 		if (i > 0) printf(":");
@@ -33,7 +33,7 @@ void MFRC::PCD_UIDToSerial(MFRC522::Uid uid) {
 
 String MFRC::PCD_UIDToString(MFRC522::Uid uid) {
 	String str;
-	char buff[3];
+	char buff[12];
 	for (int i = 0; i < uid.size; i++) {
 		if (i > 0) str.concat(':'); 
 		sprintf(buff, "%02X", uid.uidByte[i]);
@@ -79,8 +79,8 @@ void MFRC::card_read_loop0() {
 		if (!mfrc522.PICC_ReadCardSerial()) {
 			continue;
 		}
-		uid = mfrc522.uid; 
-		logprint("Card read: %x:%x:%x:%x", uid.uidByte[0], uid.uidByte[1], uid.uidByte[2], uid.uidByte[3]);
+		uid = mfrc522.uid;  
+		logprint("Card read: %s", PCD_UIDToString(uid));
 		timeoutEnd = esp_timer_get_time() + 1000 * timeout;
 		readTimeout = true;
 		cardRead = true;

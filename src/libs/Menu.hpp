@@ -29,7 +29,8 @@ class Menu {
         const uint8_t * getTitleFont();
         const uint8_t * getButtonFont();
         int getGap();
-        void setTitle(const char* title);
+        void setTitle(const char* title = "");
+        void resetTitle() {setTitle();};
         TFT* display;
         Encoder* encoder;
 
