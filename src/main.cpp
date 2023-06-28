@@ -193,7 +193,18 @@ void setup() {
 void loop() {
     SR.out(wifi.getWifiStatus());
     encoder.loop();
-
+    // if(Serial.available()) {
+    //     String command = Serial.readStringUntil('\n');
+    //     if(!command.isEmpty()) {
+    //         if(command.startsWith("on")) {
+    //             logprint("Turning on %d", command.substring(3).toInt());
+    //         }
+    //         if(command.startsWith("off")) {
+    //             logprint("Turning off %d", command.substring(4).toInt());
+                
+    //         }
+    //     }
+    // }
     if(mfrc.hasReadCard() && requireUid) {
         MFRC522::Uid uid = mfrc.getUID();
         String uidBuff = mfrc.PCD_UIDToString(uid); 
