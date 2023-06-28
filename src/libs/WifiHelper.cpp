@@ -1,32 +1,23 @@
 #include "WiFiHelper.hpp"
 bool scanNetworks(const char* ssid) {
-    Serial.println("Scanning Networks...");
+    logprint("Scanning Networks...");
     bool result = false;
     const int16_t n = WiFi.scanNetworks();
     if(n == WIFI_SCAN_FAILED) { 
-        Serial.println("Scan failed.");
+        logprint("Scan failed.");
         return result;
     }
-    Serial.println("Scan done.");
+    logprint("Scan done.");
     if (n == 0) {
-        Serial.println("No networks found.");
+        logprint("No networks found.");
         return result; 
     }
-    Serial.print(n);
-    Serial.println(" Networks found.");
+    logprint("%d Networks found.", n);
     for (int i = 0; i < n; ++i) { 
         result = result | WiFi.SSID(i).compareTo(ssid);
-        Serial.print(" - ");
-        Serial.print(i + 1);
-        Serial.print(": ");
-        Serial.print(WiFi.SSID(i));
-        Serial.print(" (");
-        Serial.print(WiFi.RSSI(i));
-        Serial.print(")");
-        Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+        logprint(" - %d: %s (%d)%s", i+1, WiFi.SSID(i).c_str(), WiFi.RSSI(i), (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
         delay(10);
-    } 
-    Serial.println("");
+    }  
     return result;
 }
 
@@ -42,27 +33,25 @@ void WiFiHelper::begin(WiFiHelperConfig_t* wifiConfig) {
     bool foundNetwork = scanNetworks(wifi_ssid);
     if(foundNetwork) {
         WiFi.begin(wifi_ssid, wifi_password); 
-        Serial.print("Connecting to WiFi...");
+        logprint("Connecting to WiFi...");
         while (WiFi.status() != WL_CONNECTED && polTimeout < 6) {
             delay(1000);
-            polTimeout++;
-            Serial.print(".");
-        }
-        Serial.println("");
+            polTimeout++; 
+        } 
 
     }     
     if(!foundNetwork || polTimeout == 6) { 
-        Serial.printf("Opening Access Point: \"%s\", \"%s\"\n", wifi_ssid, wifi_password);
+        logprint("Opening Access Point: \"%s\", \"%s\"", wifi_ssid, wifi_password);
         WiFi.softAP(wifi_ssid, wifi_password); 
     }
 
     server.begin(server_port);
-	Serial.println("Starting Server...");
+	logprint("Starting Server...");
     udp.setTimeout(20);
     server.setNoDelay(true);
     server.setTimeout(20);
     udp.begin(udp_port);
-	Serial.println("Server Started!");
+	logprint("Server Started!");
     
     xTaskCreatePinnedToCore(wifi_loop0, "wifi_loop", 10000, this, 1, &wifi_helper, tskNO_AFFINITY);  
 }
@@ -88,7 +77,7 @@ void runClientSetup(WiFiClient* client, WiFiHelper* helper) {
         if(client->available()) { 
             String data = client->readString();
             String newData = data.substring(0, data.indexOf("\n"));
-            Serial.println("[TCP] Received from Tablet: " + newData); 
+            logprint("[TCP] Received from Tablet: %s", newData); 
             client->println("Hello Tablet!");
 
             helper->WiFISetupFunction(client);
@@ -102,7 +91,7 @@ void runClientLoop(WiFiClient* client, WiFiHelper* helper) {
         if (client->available()) { 
             String data = client->readStringUntil('\n');
             String newData = data.substring(0, data.indexOf("\n"));
-            Serial.println("[TCP] Received: " + newData); 
+            logprint("[TCP] Received: %s", newData); 
             helper->commandRecieved(newData.c_str());
         }
         
@@ -110,7 +99,7 @@ void runClientLoop(WiFiClient* client, WiFiHelper* helper) {
         if(xQueueReceive(helper->queue, (void*)(&data), 0)) {
             char send[30];
             memcpy(send, data, sizeof(send));
-            Serial.printf("Sending: %s\n", send);
+            logprint("Sending: %s", send);
             client->println(send); 
         }
     } 
@@ -128,7 +117,7 @@ void wifi_loop0(void* o) {
             byte buffer[packetSize];
             udp.read(buffer, packetSize);
             String message = String((char*)buffer);
-            Serial.println("[UDP] Received UDP message: " + message);
+            logprint("[UDP] Received UDP message: %s", message);
 
             udp.beginPacket(udp.remoteIP(), udp.remotePort()); 
             udp.write(WiFi.localIP()[0]); 
@@ -136,13 +125,12 @@ void wifi_loop0(void* o) {
             udp.write(WiFi.localIP()[2]); 
             udp.write(WiFi.localIP()[3]); 
             udp.endPacket(); 
-            Serial.print("[UDP] Sent IP: ");
-            Serial.println(WiFi.localIP().toString()); 
+            logprint("[UDP] Sent IP: %s", WiFi.localIP().toString()); 
         }
 
         if(server.hasClient()) {
             helper->status = TCPCONNECTED;
-            Serial.println("[TCP] Connecting");
+            logprint("[TCP] Connecting");
             WiFiClient client = server.available(); 
             runClientSetup(&client, helper);
             

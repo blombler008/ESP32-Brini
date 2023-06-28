@@ -5,9 +5,11 @@
 #include <string.h>
 #include <WString.h>
 
+#define logprint(format, ...) log_i(format, ##__VA_ARGS__)
+
 #ifdef DEBUG
 
-#define dprintf(msg, ...) Serial.printf(msg, __VA_ARGS__);
+#define dprintf(msg, ...) Serial.printf(msg, ##__VA_ARGS__);
 #define dprintln(msg) Serial.println(msg);
 #define dprint(msg) Serial.print(msg);
             

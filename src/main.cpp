@@ -12,7 +12,7 @@ SPIClass vspi;
 // Adafruit_NeoPixel pixel = Adafruit_NeoPixel(1, 18, NEO_GRB+NEO_KHZ800);
 
 
-bool requireUid = false;
+bool requireUid = true;
 int lastButtonId = -1;
 const char* lastScannedUid;
 
@@ -69,8 +69,9 @@ int ids[cocktails_size];
 
 void CocktailUsed(int cocktail, const char* uid) {
     if(String(uid).isEmpty() && requireUid) return;
+    Cocktail cocktailUsed = *(cocktails[cocktail]);
 
-    Serial.printf("Cocktail %s wurde benutzt\n", cocktails[cocktail]->getName());
+    logprint("Cocktail %s wurde benutzt\n", cocktailUsed.getName());
 
     menu.setTitle("");
     lastButtonId = -1;
@@ -186,7 +187,7 @@ void setup() {
     mfrc.PCD_DumpVersionToSerial(); 
 
 
-	Serial.println("Setup Finished");
+	logprint("Setup Finished");
 }
  
 void loop() {

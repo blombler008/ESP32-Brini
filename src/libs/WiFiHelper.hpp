@@ -7,6 +7,7 @@
 #include <WebServer.h>
 #include <freertos/queue.h> 
 #include <esp_wifi.h>
+#include "PrintHelper.hpp"
 
 typedef struct {
     const char* ssid;

@@ -2,6 +2,7 @@
 #define MFRC_HPP
 
 #include <MFRC522.h>
+#include "PrintHelper.hpp"
 #include <Ticker.h>
 
 class MFRC {
@@ -13,6 +14,7 @@ class MFRC {
         uint64_t timeoutEnd;
         uint32_t timeout;
         MFRC522::Uid uid; 
+        TaskHandle_t MFRC_handle; 
     public:
         void card_read_loop0();
         MFRC522 mfrc522;
