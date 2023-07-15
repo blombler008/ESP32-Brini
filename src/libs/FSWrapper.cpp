@@ -1,6 +1,6 @@
 #include "FSWrapper.hpp"
  
-FSWrapper::FSWrapper() {}
+FSWrapper::FSWrapper(int chip_select) {sd_ss = chip_select;};
 
 bool openFile(File* filef, FS &fs, const char* path, const char* mode = FILE_READ);
 void printLastWrite(File* file);
@@ -11,16 +11,22 @@ void FSWrapper::begin(bool formatOnFail) {
         printf("LittleFS Mount Failed\n");
         return;
     }
-    mounted = true;
+    littleFSmounted = true;
+
+    if(!SD.begin(sd_ss)) {
+        printf("SDFS Mount Failed\n");
+        return;
+    }
+    sdFSmounted = true;
 }
 
 void FSWrapper::listDir(const char * dirname, uint8_t levels){
 
-    if (!mounted) return;
+    if (!littleFSmounted) return;
 
-    printf("Listing directory: %s\r\n", dirname);
+    printf("Listing LITTLEFS directory: /littlefs%s\r\n", dirname);
 
-    File root = fs.open(dirname);
+    File root = LittleFS.open(dirname);
 
     if(!root){
         printf("- failed to open directory\n");
@@ -32,7 +38,29 @@ void FSWrapper::listDir(const char * dirname, uint8_t levels){
         return;
     }
 
+    if(!sdFSmounted) return;
     File file = root.openNextFile();
+
+    while(file){ 
+        printFileInfo(this, &file, levels);
+        file = root.openNextFile();
+    }
+    
+    printf("Listing SDFS directory: /sd%s\r\n", dirname);
+
+    root = SD.open(dirname);
+
+    if(!root){
+        printf("- failed to open directory\n");
+        return;
+    }
+
+    if(!root.isDirectory()){
+        printf(" - not a directory\n");
+        return;
+    }
+
+    file = root.openNextFile();
     while(file){ 
         printFileInfo(this, &file, levels);
         file = root.openNextFile();
@@ -41,7 +69,7 @@ void FSWrapper::listDir(const char * dirname, uint8_t levels){
 
 void FSWrapper::createDir(const char * path){
     
-    if (!mounted) return; 
+    if (!littleFSmounted) return; 
 
     if(fs.mkdir(path)) {
         dprintf("Dir %s created!\n", path); 
@@ -54,7 +82,7 @@ void FSWrapper::createDir(const char * path){
 
 void FSWrapper::removeDir(const char * path){
     
-    if (!mounted) return; 
+    if (!littleFSmounted) return; 
 
     if(fs.rmdir(path)) {
         dprintf("Dir %s removed!\n", path);   
@@ -66,7 +94,7 @@ void FSWrapper::removeDir(const char * path){
 
 String FSWrapper::readFile(const char * path){
     
-    if (!mounted) return emptyString;
+    if (!littleFSmounted) return emptyString;
     dprintf("Reading file: %s\r\n", path);
 
     File file; 
@@ -83,7 +111,7 @@ String FSWrapper::readFile(const char * path){
 
 void FSWrapper::writeFile(const char* path, const char* message){
     
-    if (!mounted) return;
+    if (!littleFSmounted) return;
     
     dprintf("Writing file: %s\r\n", path);
 
@@ -98,7 +126,7 @@ void FSWrapper::writeFile(const char* path, const char* message){
 
 void FSWrapper::appendFile(const char* path, const char* message){
     
-    if (!mounted) return;
+    if (!littleFSmounted) return;
     dprintf("Appending to file: %s\r\n", path);
  
     File file; 
@@ -112,7 +140,7 @@ void FSWrapper::appendFile(const char* path, const char* message){
 
 void FSWrapper::renameFile(const char* path1, const char* path2){
     
-    if (!mounted) return; 
+    if (!littleFSmounted) return; 
 
     if (!fs.rename(path1, path2)) printf("Rename %s to %s failed\r\n", path1, path2);
     
@@ -120,7 +148,7 @@ void FSWrapper::renameFile(const char* path1, const char* path2){
 
 void FSWrapper::deleteFile(const char* path){
     
-    if (!mounted) return; 
+    if (!littleFSmounted) return; 
 
     if(!fs.remove(path)) printf("delete %s failed", path);  
 } 
@@ -160,4 +188,11 @@ void printFileInfo(FSWrapper* w, File* file, int levels) {
 
     Serial.print(file->size()); 
     printLastWrite(file);
+}
+
+bool FSWrapper::isLittleFSMounted() {
+    return littleFSmounted;
+}
+bool FSWrapper::isSDMounted() {
+    return sdFSmounted;
 }

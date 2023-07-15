@@ -8,7 +8,7 @@
 class LuaHandler {
     public:
         LuaHandler(bool formatOnFail = false);
-        void initialize();
+        void initialize(int sdFS_ss = SS);
         void start(); 
         void executeLoop();
         void executeSetup();
@@ -18,7 +18,7 @@ class LuaHandler {
         void lua_loop0(void);
         lua_State* L;
         LuaWrapper luaWrapper;
-        FSWrapper fswrapper;
+        FSWrapper* fswrapper;
         bool formatOnFail;
         TaskHandle_t fs_lua; 
 };

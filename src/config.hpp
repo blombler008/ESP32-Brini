@@ -11,6 +11,8 @@
 #include <libs/WiFiHelper.hpp>
 #include <libs/MFRC.hpp>
 
+#include <SPI.h>
+#include <SD.h>
 
 #include <phy_init_data.h>
 #include <FreeRTOS.h>
@@ -51,7 +53,7 @@
 // ENCODER SWITCHES
 #define ENC_A           1
 #define ENC_B           2 
-#define ENC_SW          3 /// FIX ME -> (3)
+#define ENC_SW          3 /// FIX ME 42 -> (3)
 
 // SSR Relai
 #define SSR_D1          10
@@ -60,9 +62,9 @@
 #define SSR_D4          13
 
 // SPI pins
-#define SPI_SCK         36  // CLOCK
+#define SPI_SCK         37  // CLOCK   [[[ FIX ? Switch with mosi]]]
 #define SPI_MISO        38  // DATA IN
-#define SPI_MOSI        37  // DATA OUT
+#define SPI_MOSI        36  // DATA OUT [[[ FIX ? Switch with sck]]]
 
 #define RFID_CS         35  // Chip SELECT
 #define RFID_RST        39  // RESET
